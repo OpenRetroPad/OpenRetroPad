@@ -146,7 +146,7 @@ static const int translateToHid[12] = {
 
 GameControllers controllers;
 
-Gamepad gamepad;
+GAMEPAD_CLASS gamepad;
 
 void setup() {
 	gamepad.begin();

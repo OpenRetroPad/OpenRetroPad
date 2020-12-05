@@ -13,7 +13,7 @@ RF24 radio(7, 8);  // CE, CSN
 
 const byte address[13] = "OpenRetroPad";
 
-Gamepad gamepad;
+GAMEPAD_CLASS gamepad;
 
 void setup() {
 	gamepad.begin();

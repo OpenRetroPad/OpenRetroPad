@@ -7,6 +7,10 @@
 
 #define GAMEPAD_REPORT_ARRAY_ADD 1
 
+#ifndef GAMEPAD_CLASS
+#define GAMEPAD_CLASS RadioGamepad
+#endif
+
 #include "../common.h"
 
 RF24 radio(7, 8);  // CE, CSN
@@ -17,7 +21,7 @@ class RadioGamepad : public AbstractGamepad {
 	RadioGamepad() : AbstractGamepad() {
 	}
 
-	void begin(void) {
+	virtual void begin(void) {
 		Serial.println("RadioGamepad.begin");
 		radio.begin();
 		radio.openWritingPipe(address);
@@ -25,13 +29,11 @@ class RadioGamepad : public AbstractGamepad {
 		radio.stopListening();
 	}
 
-	void sync(const uint8_t cIdx) {
+	virtual void sendHidReport(const uint8_t cIdx, const void* d, int len) {
 		Serial.println("RadioGamepad.sync");
 		gamepadReport[15] = cIdx;
-		radio.write(&gamepadReport, 16);
+		radio.write(d, 16);
 	}
 };
-
-typedef RadioGamepad Gamepad;
 
 #endif	// RADIO_GAMEPAD_H

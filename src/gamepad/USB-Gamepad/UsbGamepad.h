@@ -3,6 +3,10 @@
 
 #include <WString.h>
 
+#ifndef GAMEPAD_CLASS
+#define GAMEPAD_CLASS UsbGamepad
+#endif
+
 #include "../common.h"
 
 #include "HID.h"
@@ -53,6 +57,8 @@ class Gamepad_ : public PluggableUSBModule {
 		// due to the USB specs, but Windows and Linux just assumes its in report mode.
 		protocol = HID_REPORT_PROTOCOL;
 
+		this->sentHidReportDescriptor = true;
+
 		return USB_SendControl(TRANSFER_PGM, _hidReportDescriptor, sizeof(_hidReportDescriptor));
 	}
 
@@ -100,6 +106,7 @@ class Gamepad_ : public PluggableUSBModule {
 	}
 
    public:
+	boolean sentHidReportDescriptor = false;
 	Gamepad_(void) : PluggableUSBModule(1, 1, epType), protocol(HID_REPORT_PROTOCOL), idle(1) {
 		epType[0] = EP_TYPE_INTERRUPT_IN;
 		PluggableUSB().plug(this);
@@ -121,11 +128,14 @@ class UsbGamepad : public AbstractGamepad {
 		this->deviceManufacturer = deviceManufacturer;
 	}
 
-	void sync(const uint8_t cIdx) {
-		gamepad[cIdx].send(&gamepadReport, GAMEPAD_REPORT_LEN);
+	virtual bool isConnected(void) {
+		// if the first one is connected, we assume they all are
+		return gamepad[0].sentHidReportDescriptor;
+	}
+
+	virtual void sendHidReport(const uint8_t cIdx, const void* d, int len) {
+		gamepad[cIdx].send(d, len);
 	}
 };
-
-typedef UsbGamepad Gamepad;
 
 #endif	// USB_GAMEPAD_H

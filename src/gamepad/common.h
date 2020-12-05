@@ -1,4 +1,7 @@
 
+#ifndef GAMEPAD_COMMON_H
+#define GAMEPAD_COMMON_H
+
 #include <Arduino.h>
 
 #define ARDUINO_ARCH_ESP32 1
@@ -241,5 +244,14 @@ class AbstractGamepad {
 		return ((b & _buttons[cIdx]) > 0);
 	}
 
-	virtual void sync(const uint8_t cIdx);	// actually sends report
+	virtual void sync(const uint8_t cIdx) {
+		sendHidReport(cIdx, &gamepadReport, GAMEPAD_REPORT_LEN);
+	}
+
+	virtual void sendHidReport(const uint8_t cIdx, const void* d, int len);	 // actually sends report
+
+	virtual ~AbstractGamepad() {
+	}
 };
+
+#endif	// GAMEPAD_COMMON_H

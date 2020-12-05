@@ -19,6 +19,10 @@
 
 #include "ESP32-BLE-Gamepad/BleGamepad.h"
 
+#elif GAMEPAD_OUTPUT == 4
+
+#include "UsbRadio-Gamepad/UsbRadioGamepad.h"
+
 #else
 
 #error Unsupported value for GAMEPAD_OUTPUT, must be 0-3

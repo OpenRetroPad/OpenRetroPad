@@ -3,7 +3,9 @@
 
 #include "gamepad/Gamepad.h"
 
-Gamepad gamepad;
+GAMEPAD_CLASS gamepad;
+
+uint8_t c = 0;
 
 void setup() {
 	Serial.begin(115200);
@@ -14,7 +16,6 @@ void setup() {
 void loop() {
 	if (gamepad.isConnected()) {
 		// test code to automate sending to test RadioReceiver (or any gamepad impl)
-		uint8_t c = 0;
 		Serial.println("Press buttons 1 and 32. Move all axes to center. Set DPAD to down right.");
 		gamepad.press(c, BUTTON_1);
 		gamepad.press(c, BUTTON_32);

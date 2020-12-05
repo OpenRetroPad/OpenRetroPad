@@ -3,6 +3,10 @@
 #include "sdkconfig.h"
 #if defined(CONFIG_BT_ENABLED)
 
+#ifndef GAMEPAD_CLASS
+#define GAMEPAD_CLASS BleGamepad
+#endif
+
 #include "../common.h"
 
 #include "BLE2902.h"
@@ -84,22 +88,22 @@ class BleGamepad : public AbstractGamepad {
 		this->connectionStatus = new BleConnectionStatus();
 	}
 
-	void begin(void) {
+	virtual void begin(void) {
 		xTaskCreate(this->taskServer, "server", 20000, (void *)this, 5, NULL);
 	}
 
-	void sync(const uint8_t cIdx) {
+	virtual void sendHidReport(const uint8_t cIdx, const void *d, int len) {
 		if (this->isConnected()) {
-			this->inputGamepad[cIdx]->setValue(gamepadReport, GAMEPAD_REPORT_LEN);
+			this->inputGamepad[cIdx]->setValue((uint8_t *)d, len);
 			this->inputGamepad[cIdx]->notify();
 		}
 	}
 
-	bool isConnected(void) {
+	virtual bool isConnected(void) {
 		return this->connectionStatus->connected;
 	}
 
-	void setBatteryLevel(uint8_t level) {
+	virtual void setBatteryLevel(uint8_t level) {
 		this->batteryLevel = level;
 		if (hid != 0)
 			this->hid->setBatteryLevel(this->batteryLevel);
@@ -108,8 +112,6 @@ class BleGamepad : public AbstractGamepad {
    protected:
 	virtual void onStarted(BLEServer *pServer){};
 };
-
-typedef BleGamepad Gamepad;
 
 #endif	// CONFIG_BT_ENABLED
 #endif	// ESP32_BLE_GAMEPAD_H
