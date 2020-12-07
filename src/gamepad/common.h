@@ -67,6 +67,10 @@
 #define DPAD_LEFT 7
 #define DPAD_UP_LEFT 8
 
+#define AXIS_CENTER 0
+#define AXIS_MAX 32768
+#define AXIS_MIN -32767
+
 #ifndef GAMEPAD_REPORT_ARRAY_ADD
 // this is used by radio gamepad to send additional info
 #define GAMEPAD_REPORT_ARRAY_ADD 0
@@ -185,7 +189,7 @@ class AbstractGamepad {
 		return true;
 	}
 
-	virtual void setAxes(const uint8_t cIdx, int16_t x, int16_t y, int16_t z, int16_t rZ, char rX, char rY, signed char hat) {
+	virtual void setAxis(const uint8_t cIdx, int16_t x, int16_t y, int16_t z, int16_t rZ, char rX, char rY, signed char hat) {
 		if (x == -32768) {
 			x = -32767;
 		}
@@ -225,7 +229,7 @@ class AbstractGamepad {
 	}
 
 	virtual void setHatSync(const uint8_t cIdx, signed char hat) {
-		setAxes(cIdx, 0, 0, 0, 0, 0, 0, hat);
+		setAxis(cIdx, 0, 0, 0, 0, 0, 0, hat);
 	}
 
 	virtual void buttons(const uint8_t cIdx, uint32_t b) {

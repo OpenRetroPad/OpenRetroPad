@@ -1,7 +1,9 @@
 
 #include "Arduino.h"
 
+#ifndef GAMEPAD_COUNT
 #define GAMEPAD_COUNT 2
+#endif
 #define BUTTON_COUNT 12	 // SNES has 12, NES only has 8
 
 //individual data pin for each controller

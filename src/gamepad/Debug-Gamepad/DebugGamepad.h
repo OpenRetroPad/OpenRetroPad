@@ -19,9 +19,9 @@ class DebugGamepad : public AbstractGamepad {
 		Serial.println("DebugGamepad.begin");
 	}
 
-	virtual void setAxes(const uint8_t cIdx, int16_t x, int16_t y, int16_t z, int16_t rZ, char rX, char rY, signed char hat) {
-		Serial.println("DebugGamepad.setAxes");
-		AbstractGamepad::setAxes(cIdx, x, y, z, rZ, rX, rY, hat);
+	virtual void setAxis(const uint8_t cIdx, int16_t x, int16_t y, int16_t z, int16_t rZ, char rX, char rY, signed char hat) {
+		Serial.println("DebugGamepad.setAxis");
+		AbstractGamepad::setAxis(cIdx, x, y, z, rZ, rX, rY, hat);
 	}
 
 	virtual void sendHidReport(const uint8_t cIdx, const void* d, int len) {

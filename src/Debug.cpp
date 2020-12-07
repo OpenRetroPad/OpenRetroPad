@@ -19,11 +19,11 @@ void loop() {
 		Serial.println("Press buttons 1 and 32. Move all axes to center. Set DPAD to down right.");
 		gamepad.press(c, BUTTON_1);
 		gamepad.press(c, BUTTON_32);
-		gamepad.setAxes(c, 0, 0, 0, 0, 0, 0, DPAD_DOWN_RIGHT);
+		gamepad.setAxis(c, 0, 0, 0, 0, 0, 0, DPAD_DOWN_RIGHT);
 		delay(500);
 		Serial.println("Release all buttons. Move all axes to center. Set DPAD to center.");
 		gamepad.buttons(c, 0);
-		gamepad.setAxes(c, 0, 0, 0, 0, 0, 0, DPAD_CENTER);
+		gamepad.setAxis(c, 0, 0, 0, 0, 0, 0, DPAD_CENTER);
 		delay(500);
 	}
 }
