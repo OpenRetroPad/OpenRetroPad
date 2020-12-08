@@ -295,31 +295,30 @@ void loop() {
 
 	// output received data to ique
 	//outputToiQue(&controller);
-    uint8_t c = 0; // for now just do 1 pad
-    gamepad.buttons(c, 0);
+	uint8_t c = 0;	// for now just do 1 pad
+	gamepad.buttons(c, 0);
 	if (controller.buttonA) {
-        gamepad.press(c, BUTTON_A);
+		gamepad.press(c, BUTTON_A);
 	}
 	if (controller.buttonB) {
-        gamepad.press(c, BUTTON_B);
+		gamepad.press(c, BUTTON_B);
 	}
 	if (controller.buttonZ) {
-        gamepad.press(c, BUTTON_TR);
+		gamepad.press(c, BUTTON_TR);
 	}
 	if (controller.buttonL) {
-        gamepad.press(c, BUTTON_L);
+		gamepad.press(c, BUTTON_L);
 	}
 	if (controller.buttonR) {
-        gamepad.press(c, BUTTON_R);
+		gamepad.press(c, BUTTON_R);
 	}
 	if (controller.buttonStart) {
-        gamepad.press(c, BUTTON_START);
+		gamepad.press(c, BUTTON_START);
 	}
 	auto hat = calculateDpadDirection(controller.DPadUp, controller.DPadDown, controller.DPadLeft, controller.DPadRight);
 	auto cHat = dpadToAxis(calculateDpadDirection(controller.CUp, controller.CDown, controller.CLeft, controller.CRight));
-    // todo: need to scale max/min to our max/min
-    gamepad.setAxis(c, controller.xAxis, controller.yAxis, cHat.x, cHat.y, 0, 0, hat);
-
+	// todo: need to scale max/min to our max/min
+	gamepad.setAxis(c, controller.xAxis, controller.yAxis, cHat.x, cHat.y, 0, 0, hat);
 
 	// polling must not occur faster than every 20 ms
 	delay(14);
