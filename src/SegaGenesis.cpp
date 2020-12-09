@@ -6,81 +6,81 @@
 #endif
 
 #define BUTTON_COUNT 9
+#define PIN_COUNT 6
 
 #include "gamepad/Gamepad.h"
 
 enum
 {
+	// this is the button mapping, change as you wish
+	SC_BTN_A = BUTTON_Y,
+	SC_BTN_B = BUTTON_B,
+	SC_BTN_C = BUTTON_A,
+	SC_BTN_X = BUTTON_L,
+	SC_BTN_Y = BUTTON_X,
+	SC_BTN_Z = BUTTON_R,
+	SC_BTN_START = BUTTON_START,
+	SC_BTN_MODE = BUTTON_SELECT,
+	SC_BTN_HOME = BUTTON_MENU,
 	SC_BTN_UP = 1,
 	SC_BTN_DOWN = 2,
 	SC_BTN_LEFT = 4,
 	SC_BTN_RIGHT = 8,
-	SC_BTN_A = 16,
-	SC_BTN_B = 32,
-	SC_BTN_C = 64,
-	SC_BTN_X = 128,
-	SC_BTN_Y = 256,
-	SC_BTN_Z = 512,
-	SC_BTN_START = 1024,
-	SC_BTN_MODE = 2048,
-	SC_BTN_HOME = 4096,
-	SC_BIT_SH_UP = 0,
-	SC_BIT_SH_DOWN = 1,
-	SC_BIT_SH_LEFT = 2,
-	SC_BIT_SH_RIGHT = 3,
-	SC_PIN1_BIT = 0,
-	SC_PIN2_BIT = 1,
-	SC_PIN3_BIT = 2,
-	SC_PIN4_BIT = 3,
-	SC_PIN6_BIT = 4,
-	SC_PIN9_BIT = 5,
-	DB9_PIN1_BIT1 = 7,
-	DB9_PIN2_BIT1 = 6,
-	DB9_PIN3_BIT1 = 5,
-	DB9_PIN4_BIT1 = 4,
-	DB9_PIN6_BIT1 = 3,
-	DB9_PIN9_BIT1 = 1,
-	DB9_PIN1_BIT2 = 3,
-	DB9_PIN2_BIT2 = 2,
-	DB9_PIN3_BIT2 = 1,
-	DB9_PIN4_BIT2 = 0,
-	DB9_PIN6_BIT2 = 4,
-	DB9_PIN9_BIT2 = 7
 };
 
-//individual data pin for each controller
-static const int DATA_PIN[GAMEPAD_COUNT][6] = {
-	{DB9_PIN1_BIT1, DB9_PIN2_BIT1, DB9_PIN3_BIT1, DB9_PIN4_BIT1, DB9_PIN6_BIT1, DB9_PIN9_BIT1},
+#if CODE_PLATFORM == 2
+
+#define OPT_PIN_READ1(X) (bitRead(reg1, DATA_PIN[c][X]))
+#define OPT_PIN_READ2(X) (bitRead(reg2, DATA_PIN[c][X]))
+
+//individual data pin BIT for each controller, they are read in bulk
+static const int DATA_PIN[GAMEPAD_COUNT][PIN_COUNT] = {
+	{7, 6, 5, 4, 3, 1},
 #if GAMEPAD_COUNT > 1
-	{DB9_PIN1_BIT2, DB9_PIN2_BIT2, DB9_PIN3_BIT2, DB9_PIN4_BIT2, DB9_PIN6_BIT2, DB9_PIN9_BIT2},
+	{3, 2, 1, 0, 4, 7},
 #endif
 };
 
-// pressing one of these buttons on the controller... (read below)
-static const int translateFromButton[BUTTON_COUNT] = {
-	SC_BTN_A,
-	SC_BTN_B,
-	SC_BTN_C,
-	SC_BTN_X,
-	SC_BTN_Y,
-	SC_BTN_Z,
-	SC_BTN_START,
-	SC_BTN_MODE,
-	SC_BTN_HOME,
+#else
+
+#define OPT_PIN_READ1(X) (digitalRead(DATA_PIN[c][X]))
+#define OPT_PIN_READ2(X) (digitalRead(DATA_PIN[c][X]))
+
+#if defined(ARDUINO_ARCH_ESP32)
+static const int DATA_PIN_SELECT[GAMEPAD_COUNT] = {
+	5,
+#if GAMEPAD_COUNT > 1
+	25,
+#endif
 };
 
-// ... translates to one of these buttons over HID
-static const int translateToHid[BUTTON_COUNT] = {
-	BUTTON_Y,
-	BUTTON_B,
-	BUTTON_A,
-	BUTTON_L,
-	BUTTON_X,
-	BUTTON_R,
-	BUTTON_START,
-	BUTTON_SELECT,
-	BUTTON_MENU,
+//individual data pin for each controller
+static const int DATA_PIN[GAMEPAD_COUNT][PIN_COUNT] = {
+	{15, 2, 4, 16, 17, 18},
+#if GAMEPAD_COUNT > 1
+	{36, 39, 34, 35, 33, 27},
+#endif
 };
+
+#else  // end esp32 pins, start generic pins
+
+static const int DATA_PIN_SELECT[GAMEPAD_COUNT] = {
+	7,
+#if GAMEPAD_COUNT > 1
+	5,
+#endif
+};
+
+//individual data pin for each controller
+static const int DATA_PIN[GAMEPAD_COUNT][PIN_COUNT] = {
+	{18, 19, 20, 21, 14, 15},
+#if GAMEPAD_COUNT > 1
+	{1, 0, 2, 3, 4, 6},
+#endif
+};
+#endif	// esp32 vs generic pins
+
+#endif	// CODE_PLATFORM
 
 const byte SC_CYCLE_DELAY = 10;	 // Delay (µs) between setting the select pin and reading the button pins
 
@@ -88,29 +88,36 @@ class SegaControllers32U4 {
    public:
 	SegaControllers32U4(void);
 	void readState();
+	byte currentDpadState[GAMEPAD_COUNT];
 	word currentState[GAMEPAD_COUNT];
 	// Controller previous states
 	word lastState[GAMEPAD_COUNT];
+	byte lastDpadState[GAMEPAD_COUNT];
 
-	void poll(void (*controllerChanged)(const int controller)) {
+	void poll(void (*controllerChanged)(const int c)) {
 		readState();
 		for (int c = 0; c < GAMEPAD_COUNT; c++) {
-			if (currentState[c] != lastState[c]) {
+			if (currentState[c] != lastState[c] || currentDpadState[c] != lastDpadState[c]) {
 				controllerChanged(c);
 				lastState[c] = currentState[c];
+				lastDpadState[c] = currentDpadState[c];
 			}
 		}
 	}
 
 	bool down(int controller, int button) const {
-		return currentState[controller] & button;
+		return currentDpadState[controller] & button;
+	}
+
+	bool dpad(int controller, int button) const {
+		return currentDpadState[controller] & button;
 	}
 
 #ifdef DEBUG
 	void printState(byte gp) {
 		auto cs = currentState[gp];
-		//Serial.println(cs);
-		//Serial.print((cs & SC_CTL_ON)    ? "+" : "-");
+		Serial.print(_connected[gp] ? "+" : "-");
+		Serial.print(_sixButtonMode[gp] ? "6" : "3");
 		Serial.print((cs & SC_BTN_UP) ? "U" : "0");
 		Serial.print((cs & SC_BTN_DOWN) ? "D" : "0");
 		Serial.print((cs & SC_BTN_LEFT) ? "L" : "0");
@@ -129,7 +136,6 @@ class SegaControllers32U4 {
 #endif
 
    private:
-	void readPort(byte c, byte reg1, byte reg2);
 	boolean _pinSelect;
 
 	byte _ignoreCycles[GAMEPAD_COUNT];
@@ -137,14 +143,20 @@ class SegaControllers32U4 {
 	boolean _connected[GAMEPAD_COUNT];
 	boolean _sixButtonMode[GAMEPAD_COUNT];
 
+#if CODE_PLATFORM == 2
+	void readPort(byte c, byte reg1, byte reg2);
 	byte _inputReg1;
 	byte _inputReg2;
 #if GAMEPAD_COUNT > 1
 	byte _inputReg3;
-#endif
+#endif	// GAMEPAD_COUNT
+#else
+	void readPort(byte c);
+#endif	// CODE_PLATFORM
 };
 
 SegaControllers32U4::SegaControllers32U4(void) {
+#if CODE_PLATFORM == 2
 	// Setup input pins (A0,A1,A2,A3,14,15 or PF7,PF6,PF5,PF4,PB3,PB1)
 	DDRF &= ~B11110000;	 // input
 	PORTF |= B11110000;	 // high to enable internal pull-up
@@ -158,16 +170,32 @@ SegaControllers32U4::SegaControllers32U4(void) {
 	DDRE |= B01000000;
 	PORTC |= B01000000;	 // Select pins high
 	PORTE |= B01000000;
+#else
+	for (int c = 0; c < GAMEPAD_COUNT; c++) {
+		// Setup output pin
+		pinMode(DATA_PIN_SELECT[c], OUTPUT);
+		digitalWrite(DATA_PIN_SELECT[c], HIGH);
+
+		// Setup input pins
+		for (byte i = 0; i < PIN_COUNT; i++) {
+			pinMode(DATA_PIN[c][i], INPUT_PULLUP);
+		}
+	}
+#endif
 
 	_pinSelect = true;
 	for (int c = 0; c < GAMEPAD_COUNT; c++) {
 		currentState[c] = 0;
 		lastState[c] = 0;
+		currentDpadState[c] = 0;
+		lastDpadState[c] = 0;
 		_connected[c] = 0;
 		_sixButtonMode[c] = false;
 		_ignoreCycles[c] = 0;
 	}
 }
+
+#if CODE_PLATFORM == 2
 
 void SegaControllers32U4::readState() {
 	// Set the select pins low/high
@@ -196,6 +224,31 @@ void SegaControllers32U4::readState() {
 #endif
 }
 
+#else
+
+void SegaControllers32U4::readState() {
+	// Set the select pins low/high
+	_pinSelect = !_pinSelect;
+	if (!_pinSelect) {
+		for (int c = 0; c < GAMEPAD_COUNT; c++) {
+			digitalWrite(DATA_PIN_SELECT[c], LOW);
+		}
+	} else {
+		for (int c = 0; c < GAMEPAD_COUNT; c++) {
+			digitalWrite(DATA_PIN_SELECT[c], HIGH);
+		}
+	}
+
+	// Short delay to stabilise outputs in controller
+	delayMicroseconds(SC_CYCLE_DELAY);
+
+	for (int c = 0; c < GAMEPAD_COUNT; c++) {
+		readPort(c);
+	}
+}
+
+#endif
+
 // "Normal" Six button controller reading routine, done a bit differently in this project
 // Cycle  TH out  TR in  TL in  D3 in  D2 in  D1 in  D0 in
 // 0      LO      Start  A      0      0      Down   Up
@@ -206,7 +259,13 @@ void SegaControllers32U4::readState() {
 // 5      HI      C      B      Mode   X      Y      Z       (Read X,Y,Z and Mode in this cycle)
 // 6      LO      ---    ---    ---    ---    ---    Home    (Home only for 8bitdo wireless gamepads)
 // 7      HI      ---    ---    ---    ---    ---    ---
-void SegaControllers32U4::readPort(byte c, byte reg1, byte reg2) {
+void SegaControllers32U4::readPort(byte c
+#if CODE_PLATFORM == 2
+								   ,
+								   byte reg1,
+								   byte reg2
+#endif
+) {
 	if (_ignoreCycles[c] <= 0) {
 		if (_pinSelect)	 // Select pin is HIGH
 		{
@@ -214,66 +273,66 @@ void SegaControllers32U4::readPort(byte c, byte reg1, byte reg2) {
 				// Check if six button mode is active
 				if (_sixButtonMode[c]) {
 					// Read input pins for X, Y, Z, Mode
-					(bitRead(reg1, DATA_PIN[c][0]) == LOW) ? currentState[c] |= SC_BTN_Z : currentState[c] &= ~SC_BTN_Z;
-					(bitRead(reg1, DATA_PIN[c][1]) == LOW) ? currentState[c] |= SC_BTN_Y : currentState[c] &= ~SC_BTN_Y;
-					(bitRead(reg1, DATA_PIN[c][2]) == LOW) ? currentState[c] |= SC_BTN_X : currentState[c] &= ~SC_BTN_X;
-					(bitRead(reg1, DATA_PIN[c][3]) == LOW) ? currentState[c] |= SC_BTN_MODE : currentState[c] &= ~SC_BTN_MODE;
+					(OPT_PIN_READ1(0) == LOW) ? currentState[c] |= SC_BTN_Z : currentState[c] &= ~SC_BTN_Z;
+					(OPT_PIN_READ1(1) == LOW) ? currentState[c] |= SC_BTN_Y : currentState[c] &= ~SC_BTN_Y;
+					(OPT_PIN_READ1(2) == LOW) ? currentState[c] |= SC_BTN_X : currentState[c] &= ~SC_BTN_X;
+					(OPT_PIN_READ1(3) == LOW) ? currentState[c] |= SC_BTN_MODE : currentState[c] &= ~SC_BTN_MODE;
 					_sixButtonMode[c] = false;
 					_ignoreCycles[c] = 2;  // Ignore the two next cycles (cycles 6 and 7 in table above)
 				} else {
 					// Read input pins for Up, Down, Left, Right, B, C
-					(bitRead(reg1, DATA_PIN[c][0]) == LOW) ? currentState[c] |= SC_BTN_UP : currentState[c] &= ~SC_BTN_UP;
-					(bitRead(reg1, DATA_PIN[c][1]) == LOW) ? currentState[c] |= SC_BTN_DOWN : currentState[c] &= ~SC_BTN_DOWN;
-					(bitRead(reg1, DATA_PIN[c][2]) == LOW) ? currentState[c] |= SC_BTN_LEFT : currentState[c] &= ~SC_BTN_LEFT;
-					(bitRead(reg1, DATA_PIN[c][3]) == LOW) ? currentState[c] |= SC_BTN_RIGHT : currentState[c] &= ~SC_BTN_RIGHT;
-					(bitRead(reg2, DATA_PIN[c][4]) == LOW) ? currentState[c] |= SC_BTN_B : currentState[c] &= ~SC_BTN_B;
-					(bitRead(reg2, DATA_PIN[c][5]) == LOW) ? currentState[c] |= SC_BTN_C : currentState[c] &= ~SC_BTN_C;
+					(OPT_PIN_READ1(0) == LOW) ? currentDpadState[c] |= SC_BTN_UP : currentDpadState[c] &= ~SC_BTN_UP;
+					(OPT_PIN_READ1(1) == LOW) ? currentDpadState[c] |= SC_BTN_DOWN : currentDpadState[c] &= ~SC_BTN_DOWN;
+					(OPT_PIN_READ1(2) == LOW) ? currentDpadState[c] |= SC_BTN_LEFT : currentDpadState[c] &= ~SC_BTN_LEFT;
+					(OPT_PIN_READ1(3) == LOW) ? currentDpadState[c] |= SC_BTN_RIGHT : currentDpadState[c] &= ~SC_BTN_RIGHT;
+					(OPT_PIN_READ2(4) == LOW) ? currentState[c] |= SC_BTN_B : currentState[c] &= ~SC_BTN_B;
+					(OPT_PIN_READ2(5) == LOW) ? currentState[c] |= SC_BTN_C : currentState[c] &= ~SC_BTN_C;
 				}
 			} else	// No Mega Drive controller is connected, use SMS/Atari mode
 			{
 				// Clear current state
-				currentState[c] = 0;
+				currentState[c] = currentDpadState[c] = 0;
 
 				// Read input pins for Up, Down, Left, Right, Fire1, Fire2
-				if (bitRead(reg1, DATA_PIN[c][0]) == LOW) {
-					currentState[c] |= SC_BTN_UP;
+				if (OPT_PIN_READ1(0) == LOW) {
+					currentDpadState[c] |= SC_BTN_UP;
 				}
-				if (bitRead(reg1, DATA_PIN[c][1]) == LOW) {
-					currentState[c] |= SC_BTN_DOWN;
+				if (OPT_PIN_READ1(1) == LOW) {
+					currentDpadState[c] |= SC_BTN_DOWN;
 				}
-				if (bitRead(reg1, DATA_PIN[c][2]) == LOW) {
-					currentState[c] |= SC_BTN_LEFT;
+				if (OPT_PIN_READ1(2) == LOW) {
+					currentDpadState[c] |= SC_BTN_LEFT;
 				}
-				if (bitRead(reg1, DATA_PIN[c][3]) == LOW) {
-					currentState[c] |= SC_BTN_RIGHT;
+				if (OPT_PIN_READ1(3) == LOW) {
+					currentDpadState[c] |= SC_BTN_RIGHT;
 				}
-				if (bitRead(reg2, DATA_PIN[c][4]) == LOW) {
+				if (OPT_PIN_READ2(4) == LOW) {
 					currentState[c] |= SC_BTN_A;
 				}
-				if (bitRead(reg2, DATA_PIN[c][5]) == LOW) {
+				if (OPT_PIN_READ2(5) == LOW) {
 					currentState[c] |= SC_BTN_B;
 				}
 			}
 		} else	// Select pin is LOW
 		{
 			// Check if a controller is connected
-			_connected[c] = (bitRead(reg1, DATA_PIN[c][2]) == LOW && bitRead(reg1, DATA_PIN[c][3]) == LOW);
+			_connected[c] = OPT_PIN_READ1(2) == LOW && OPT_PIN_READ1(3) == LOW;
 
 			// Check for six button mode
-			_sixButtonMode[c] = (bitRead(reg1, DATA_PIN[c][0]) == LOW && bitRead(reg1, DATA_PIN[c][1]) == LOW);
+			_sixButtonMode[c] = OPT_PIN_READ1(0) == LOW && OPT_PIN_READ1(1) == LOW;
 
 			// Read input pins for A and Start
 			if (_connected[c]) {
 				if (!_sixButtonMode[c]) {
-					(bitRead(reg2, DATA_PIN[c][4]) == LOW) ? currentState[c] |= SC_BTN_A : currentState[c] &= ~SC_BTN_A;
-					(bitRead(reg2, DATA_PIN[c][5]) == LOW) ? currentState[c] |= SC_BTN_START : currentState[c] &= ~SC_BTN_START;
+					(OPT_PIN_READ2(4) == LOW) ? currentState[c] |= SC_BTN_A : currentState[c] &= ~SC_BTN_A;
+					(OPT_PIN_READ2(5) == LOW) ? currentState[c] |= SC_BTN_START : currentState[c] &= ~SC_BTN_START;
 				}
 			}
 		}
 	} else {
 		if (_ignoreCycles[c]-- == 2)  // Decrease the ignore cycles counter and read 8bitdo home in first "ignored" cycle, this cycle is unused on normal 6-button controllers
 		{
-			(bitRead(reg1, DATA_PIN[c][0]) == LOW) ? currentState[c] |= SC_BTN_HOME : currentState[c] &= ~SC_BTN_HOME;
+			(OPT_PIN_READ1(0) == LOW) ? currentState[c] |= SC_BTN_HOME : currentState[c] &= ~SC_BTN_HOME;
 		}
 	}
 }
@@ -282,51 +341,49 @@ SegaControllers32U4 controllers;
 
 GAMEPAD_CLASS gamepad;
 
-void setup() {
-	Serial.begin(115200);
-	gamepad.begin();
-}
-
 void controllerChanged(const int c) {
 #ifdef DEBUG
 	controllers.printState(c);
 #endif
 
-	gamepad.buttons(c, 0);
-	// if start and select are held at the same time, send menu and only menu
-	if (controllers.down(c, SC_BTN_START) && controllers.down(c, SC_BTN_DOWN)) {
+	// if start and down are held at the same time, send menu and only menu
+	gamepad.buttons(c, controllers.currentState[c]);
+	if (controllers.down(c, SC_BTN_START) && controllers.dpad(c, SC_BTN_DOWN)) {
+		gamepad.buttons(c, 0);
 		gamepad.press(c, BUTTON_MENU);
-	} else {
-		// actually send buttons held
-		for (uint8_t btn = 0; btn < BUTTON_COUNT; btn++) {
-			if (controllers.down(c, translateFromButton[btn])) {
-				gamepad.press(c, translateToHid[btn]);
-			}
-		}
+		gamepad.setHatSync(c, DPAD_CENTERED);
+		return;
 	}
-	if (controllers.down(c, SC_BTN_DOWN)) {
-		if (controllers.down(c, SC_BTN_RIGHT)) {
+	if (controllers.dpad(c, SC_BTN_DOWN)) {
+		if (controllers.dpad(c, SC_BTN_RIGHT)) {
 			gamepad.setHatSync(c, DPAD_DOWN_RIGHT);
-		} else if (controllers.down(c, SC_BTN_LEFT)) {
+		} else if (controllers.dpad(c, SC_BTN_LEFT)) {
 			gamepad.setHatSync(c, DPAD_DOWN_LEFT);
 		} else {
 			gamepad.setHatSync(c, DPAD_DOWN);
 		}
-	} else if (controllers.down(c, SC_BTN_UP)) {
-		if (controllers.down(c, SC_BTN_RIGHT)) {
+	} else if (controllers.dpad(c, SC_BTN_UP)) {
+		if (controllers.dpad(c, SC_BTN_RIGHT)) {
 			gamepad.setHatSync(c, DPAD_UP_RIGHT);
-		} else if (controllers.down(c, SC_BTN_LEFT)) {
+		} else if (controllers.dpad(c, SC_BTN_LEFT)) {
 			gamepad.setHatSync(c, DPAD_UP_LEFT);
 		} else {
 			gamepad.setHatSync(c, DPAD_UP);
 		}
-	} else if (controllers.down(c, SC_BTN_RIGHT)) {
+	} else if (controllers.dpad(c, SC_BTN_RIGHT)) {
 		gamepad.setHatSync(c, DPAD_RIGHT);
-	} else if (controllers.down(c, SC_BTN_LEFT)) {
+	} else if (controllers.dpad(c, SC_BTN_LEFT)) {
 		gamepad.setHatSync(c, DPAD_LEFT);
 	} else {
 		gamepad.setHatSync(c, DPAD_CENTERED);
 	}
+}
+
+void setup() {
+#ifdef DEBUG
+	Serial.begin(115200);
+#endif
+	gamepad.begin();
 }
 
 void loop() {

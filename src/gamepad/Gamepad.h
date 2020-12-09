@@ -1,4 +1,20 @@
 
+#ifndef CODE_PLATFORM
+#if defined(ARDUINO_ARCH_ESP32)
+
+#define CODE_PLATFORM 1	 // optimized for esp32
+
+#elif defined(ARDUINO_AVR_MICRO)
+
+#define CODE_PLATFORM 2	 // optimized for micro
+
+#else
+
+#define CODE_PLATFORM 0	 // generic
+
+#endif	// CODE_PLATFORM detection
+#endif	// ifndef CODE_PLATFORM
+
 #if GAMEPAD_OUTPUT == 0
 
 #include "Debug-Gamepad/DebugGamepad.h"
@@ -27,4 +43,4 @@
 
 #error Unsupported value for GAMEPAD_OUTPUT, must be 0-3
 
-#endif
+#endif	// GAMEPAD_OUTPUT detection
