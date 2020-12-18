@@ -14,14 +14,20 @@
 #define BUTTON_Y 16
 #define BUTTON_TL 64
 #define BUTTON_L 64
+#define BUTTON_L1 64
 #define BUTTON_TR 128
 #define BUTTON_R 128
+#define BUTTON_R1 128
 #define BUTTON_TL2 256
+#define BUTTON_L2 256
 #define BUTTON_TR2 512
+#define BUTTON_R2 512
 #define BUTTON_SELECT 1024
 #define BUTTON_START 2048
 #define BUTTON_THUMBL 8192
+#define BUTTON_L3 8192
 #define BUTTON_THUMBR 16384
+#define BUTTON_R3 16384
 
 #define BUTTON_1 1
 #define BUTTON_2 2
