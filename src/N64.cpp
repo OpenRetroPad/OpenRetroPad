@@ -4,13 +4,32 @@
 //#define PRINT_Y_AXIS_VALUES 1
 //#define PRINT_X_AXIS_VALUES 1
 //#define PLOT_CONSOLE_POLLING 1
+#define DEBUG
 
 #ifndef GAMEPAD_COUNT
 #define GAMEPAD_COUNT 1
 #endif
 
+#define AXIS_CENTER_IN 0
+#define AXIS_MAX_IN 60
+#define AXIS_MIN_IN -60
+
 #include "gamepad/Gamepad.h"
 #include "util.cpp"
+
+/*
+      LOOKING AT THE PLUG
+          /---------\
+ PIN 1-> /  o  o  o  \
+        /-------------\
+
+
+PIN # USAGE
+
+    GND
+    DATA
+    VCC +3.3V ONLY
+*/
 
 #define DATA_PIN 13
 
@@ -263,7 +282,9 @@ void updateOffsetsAndResolution() {
 ControllerData controller;
 
 void setup() {
+#ifdef DEBUG
 	Serial.begin(115200);
+#endif
 
 	gamepad.begin();
 
@@ -286,7 +307,7 @@ void setup() {
 }
 
 void loop() {
-	Serial.println("sending command to n64");
+	//Serial.println("sending command to n64");
 	// send command 0x01 to n64 controller
 	sendCommand(0x01);
 
@@ -317,19 +338,41 @@ void loop() {
 	}
 	auto hat = calculateDpadDirection(controller.DPadUp, controller.DPadDown, controller.DPadLeft, controller.DPadRight);
 	auto cHat = dpadToAxis(calculateDpadDirection(controller.CUp, controller.CDown, controller.CLeft, controller.CRight));
-	// todo: need to scale max/min to our max/min
-	gamepad.setAxis(c, controller.xAxis, controller.yAxis, cHat.x, cHat.y, 0, 0, hat);
+	gamepad.setAxis(c, translateAxis(controller.xAxis), translateAxis(controller.yAxis), cHat.x, cHat.y, 0, 0, hat);
 
 	// polling must not occur faster than every 20 ms
 	delay(14);
 
 	//checkUpdateCombo(&controller);
 
-	//Serial.printf("DPAD: %i %i %i %i \n", controller.DPadUp, controller.DPadDown, controller.DPadLeft, controller.DPadRight);
-	//Serial.printf("C: %i %i %i %i \n", controller.CUp, controller.CDown, controller.CLeft, controller.CRight);
-	//Serial.printf("Y: %i X: %i\n", controller.yAxis, controller.xAxis);
-	//Serial.print("C: ");
-	//Serial.println(controller.CUp);
+#ifdef DEBUG
+	Serial.print("buttons: ");
+	Serial.print(controller.buttonA ? "A" : "-");
+	Serial.print(controller.buttonB ? "B" : "-");
+	Serial.print(controller.buttonZ ? "Z" : "-");
+	Serial.print(controller.buttonL ? "L" : "-");
+	Serial.print(controller.buttonR ? "R" : "-");
+	Serial.print(controller.buttonStart ? "S" : "-");
+	Serial.print(" DPAD: ");
+	Serial.print(controller.DPadUp ? "U" : "-");
+	Serial.print(controller.DPadDown ? "D" : "-");
+	Serial.print(controller.DPadLeft ? "L" : "-");
+	Serial.print(controller.DPadRight ? "R" : "-");
+	Serial.print(" C: ");
+	Serial.print(controller.CUp ? "U" : "-");
+	Serial.print(controller.CDown ? "D" : "-");
+	Serial.print(controller.CLeft ? "L" : "-");
+	Serial.print(controller.CRight ? "R" : "-");
+	Serial.print(" Y: ");
+	Serial.print(controller.yAxis);
+	Serial.print(" YT: ");
+	Serial.print(translateAxis(controller.yAxis));
+	Serial.print(" X: ");
+	Serial.print(controller.xAxis);
+	Serial.print(" XT: ");
+	Serial.print(translateAxis(controller.xAxis));
+	Serial.println();
+#endif
 
 	//delay(500);
 }

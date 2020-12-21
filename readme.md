@@ -27,3 +27,5 @@ Code and/or inspiration was (or will be) taken from these places, in no particul
   * [dreamcast_usb](https://github.com/raphnet/dreamcast_usb)
   * [SNES-NRF24](https://github.com/baldengineer/SNES-NRF24)
   * https://github.com/NicoHood/Nintendo
+  * https://github.com/darthcloud/BlueRetro
+  * https://github.com/raphnet/gc_n64_usb-v3

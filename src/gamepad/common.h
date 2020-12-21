@@ -83,6 +83,16 @@
 #define DPAD_CENTERED DPAD_CENTER
 // end aliases
 
+#ifndef AXIS_CENTER_IN
+#define AXIS_CENTER_IN 0
+#endif
+#ifndef AXIS_MAX_IN
+#define AXIS_MAX_IN 32768
+#endif
+#ifndef AXIS_MIN_IN
+#define AXIS_MIN_IN -32767
+#endif
+
 #if 0
 #define BUTTON_1 1
 #define BUTTON_2 2

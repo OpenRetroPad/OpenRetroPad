@@ -51,9 +51,14 @@ PIN # USAGE
 
 #define JOYSTICK_STATE_SIZE 6
 
+#define AXIS_CENTER_IN 128
+#define AXIS_MAX_IN 255
+#define AXIS_MIN_IN 0
+
 //#define DEBUG
 
 #include "gamepad/Gamepad.h"
+#include "util.cpp"
 
 GAMEPAD_CLASS gamepad;
 
@@ -178,12 +183,6 @@ class Joystick_ {
 		} else {
 			return DPAD_CENTERED;
 		}
-	}
-
-	int16_t translateAxis(uint8_t v) {
-		//map(value, fromLow, fromHigh, toLow, toHigh)
-		// todo: don't map at all if translation isn't required...
-		return v == 128 ? AXIS_CENTER : map(v, 0, 255, AXIS_MIN, AXIS_MAX);
 	}
 
 #ifdef DEBUG
