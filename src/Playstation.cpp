@@ -22,10 +22,25 @@ PIN # USAGE
 
 */
 
+#if defined(ARDUINO_ARCH_ESP32)
+
+#define DATA1 13
+#define CMD1 12
+#define ATT1 14
+#define CLK1 27
+
+#define CTRL_BYTE_DELAY 18
+
+#else
+
 #define DATA1 2
 #define CMD1 3
 #define ATT1 4
 #define CLK1 5
+
+#define CTRL_BYTE_DELAY 6
+
+#endif	// esp32 vs generic pins
 
 #ifndef GAMEPAD_COUNT
 #define GAMEPAD_COUNT 4
@@ -171,9 +186,19 @@ class Joystick_ {
 		return v == 128 ? AXIS_CENTER : map(v, 0, 255, AXIS_MIN, AXIS_MAX);
 	}
 
+#ifdef DEBUG
+	void printBin(uint8_t c) {
+		//Serial.print(c);
+		uint8_t mask = 1;
+		for (uint8_t _i = 0; _i <= 7; _i++) {
+			Serial.print((c & mask) ? "1" : "0");
+			mask *= 2;
+		}
+	}
+#endif
+
 	void sendState(uint8_t c) {
 #ifdef DEBUG
-		uint16_t mask = 1;
 		Serial.print(c);
 		Serial.print(": type: 0x");
 		Serial.print(type, HEX);
@@ -191,25 +216,39 @@ class Joystick_ {
 		Serial.print(data[5], HEX);
 
 		Serial.print(" dec: ");
-		Serial.print(data[0]);
+		printBin(data[0]);
 		Serial.print(" ");
-		Serial.print(data[1]);
+		printBin(data[1]);
 		Serial.print(" ");
-		Serial.print(data[2]);
+		printBin(data[2]);
 		Serial.print(" ");
-		Serial.print(data[3]);
+		printBin(data[3]);
 		Serial.print(" ");
-		Serial.print(data[4]);
+		printBin(data[4]);
 		Serial.print(" ");
-		Serial.print(data[5]);
+		printBin(data[5]);
 		Serial.println();
 
-		for (uint8_t _i = 0; _i <= 32; _i++) {
-			if (down(mask)) {
-				Serial.print("db: ");
+		uint8_t mask = 1;
+		for (uint8_t _i = 0; _i <= 8; _i++) {
+			if (data[0] & mask) {
+				Serial.print("0 db: ");
+				Serial.println(mask);
+			}
+			if (data[1] & mask) {
+				Serial.print("1 db: ");
 				Serial.println(mask);
 			}
 			mask *= 2;
+		}
+
+		uint16_t mask2 = 1;
+		for (uint8_t _i = 0; _i <= 32; _i++) {
+			if (down(mask2)) {
+				Serial.print("db: ");
+				Serial.println(mask2);
+			}
+			mask2 *= 2;
 		}
 
 		Serial.flush();
@@ -240,7 +279,6 @@ uint8_t shift(uint8_t _dataOut)	 // Does the actual shifting, both in and out si
 {
 	uint8_t _temp = 0;
 	uint8_t _dataIn = 0;
-	uint8_t _delay = 6;	 //2 unstable; //clock 250kHz
 
 	delayMicroseconds(100);	 //max acknowledge waiting time 100us
 	for (uint8_t _i = 0; _i <= 7; _i++) {
@@ -250,14 +288,14 @@ uint8_t shift(uint8_t _dataOut)	 // Does the actual shifting, both in and out si
 			digitalWrite(CMD1, LOW);
 
 		digitalWrite(CLK1, LOW);  // read bit
-		delayMicroseconds(_delay);
+		delayMicroseconds(CTRL_BYTE_DELAY);
 		_temp = digitalRead(DATA1);
 		if (_temp) {
 			_dataIn = _dataIn | (B00000001 << _i);
 		}
 
 		digitalWrite(CLK1, HIGH);
-		delayMicroseconds(_delay);
+		delayMicroseconds(CTRL_BYTE_DELAY);
 	}
 	return _dataIn;
 }
