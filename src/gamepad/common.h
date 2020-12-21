@@ -286,7 +286,7 @@ class AbstractGamepad {
 	}
 
 	virtual void setHatSync(const uint8_t cIdx, signed char hat) {
-		setAxis(cIdx, 0, 0, 0, 0, 0, 0, hat);
+		setAxis(cIdx, AXIS_CENTER, AXIS_CENTER, AXIS_CENTER, AXIS_CENTER, 0, 0, hat);
 	}
 
 	virtual void buttons(const uint8_t cIdx, uint32_t b) {

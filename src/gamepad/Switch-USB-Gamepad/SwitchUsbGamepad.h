@@ -33,10 +33,6 @@ class SwitchUsbGamepad : public AbstractGamepad {
 		this->sync(cIdx);
 	}
 
-	virtual void setHatSync(const uint8_t cIdx, signed char hat) {
-		setAxis(cIdx, 0, 0, 0, 0, 0, 0, hat);
-	}
-
 	virtual void buttons(const uint8_t cIdx, uint32_t b) {
 		NSGamepad.buttons(b);
 	}

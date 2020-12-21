@@ -1,4 +1,18 @@
+/*
+      LOOKING AT THE PLUG FROM CONTROLLER
+          /---------\
+ PIN 1-> /  o  o  o  \
+        /-------------\
 
+
+PIN # USAGE
+
+    GND
+    DATA
+    VCC +3.3V ONLY
+*/
+
+#define DATA_PIN 13
 #include "Arduino.h"
 
 //#define PRINT_Y_AXIS_VALUES 1
@@ -16,22 +30,6 @@
 
 #include "gamepad/Gamepad.h"
 #include "util.cpp"
-
-/*
-      LOOKING AT THE PLUG
-          /---------\
- PIN 1-> /  o  o  o  \
-        /-------------\
-
-
-PIN # USAGE
-
-    GND
-    DATA
-    VCC +3.3V ONLY
-*/
-
-#define DATA_PIN 13
 
 #define LINE_WRITE_HIGH pinMode(DATA_PIN, INPUT_PULLUP)
 #define LINE_WRITE_LOW pinMode(DATA_PIN, OUTPUT)
@@ -307,6 +305,9 @@ void setup() {
 }
 
 void loop() {
+	// polling must not occur faster than every 20 ms
+	delay(14);
+
 	//Serial.println("sending command to n64");
 	// send command 0x01 to n64 controller
 	sendCommand(0x01);
@@ -318,6 +319,15 @@ void loop() {
 	//outputToiQue(&controller);
 	uint8_t c = 0;	// for now just do 1 pad
 	gamepad.buttons(c, 0);
+	if (controller.buttonStart) {
+		if (controller.DPadDown) {
+			// then only send menu, nothing else
+			gamepad.press(c, BUTTON_MENU);
+			gamepad.setHatSync(c, DPAD_CENTER);
+			return;
+		}
+		gamepad.press(c, BUTTON_START);
+	}
 	if (controller.buttonA) {
 		gamepad.press(c, BUTTON_A);
 	}
@@ -333,15 +343,9 @@ void loop() {
 	if (controller.buttonR) {
 		gamepad.press(c, BUTTON_R);
 	}
-	if (controller.buttonStart) {
-		gamepad.press(c, BUTTON_START);
-	}
 	auto hat = calculateDpadDirection(controller.DPadUp, controller.DPadDown, controller.DPadLeft, controller.DPadRight);
 	auto cHat = dpadToAxis(calculateDpadDirection(controller.CUp, controller.CDown, controller.CLeft, controller.CRight));
 	gamepad.setAxis(c, translateAxis(controller.xAxis), translateAxis(controller.yAxis), cHat.x, cHat.y, 0, 0, hat);
-
-	// polling must not occur faster than every 20 ms
-	delay(14);
 
 	//checkUpdateCombo(&controller);
 
