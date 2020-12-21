@@ -7,7 +7,18 @@
 #define BUTTON_COUNT 12	 // SNES has 12, NES only has 8
 
 //individual data pin for each controller
-static const int DATA_PIN[GAMEPAD_COUNT] = {18, 19};  // grey, 20, 21 are the next logical ones
+static const int DATA_PIN[GAMEPAD_COUNT] = {
+	18,
+#if GAMEPAD_COUNT > 1
+	19,
+#endif
+#if GAMEPAD_COUNT > 2
+	20,
+#endif
+#if GAMEPAD_COUNT > 3
+	21,
+#endif
+};
 
 //shared pins between all controllers
 #if defined(CONFIG_BT_ENABLED)

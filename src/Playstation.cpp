@@ -167,7 +167,8 @@ class Joystick_ {
 
 	int16_t translateAxis(uint8_t v) {
 		//map(value, fromLow, fromHigh, toLow, toHigh)
-		return v == 128 ? 0 : map(v, 0, 255, -32767, 32767);
+		// todo: don't map at all if translation isn't required...
+		return v == 128 ? AXIS_CENTER : map(v, 0, 255, AXIS_MIN, AXIS_MAX);
 	}
 
 	void sendState(uint8_t c) {
@@ -322,5 +323,5 @@ void loop() {
 		Joystick[i].updateState(i);
 	}
 
-	delayMicroseconds(1000);
+	delayMicroseconds(500);	 // todo: proper value for this... does it depend on number of gamepads/multitap ?
 }

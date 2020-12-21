@@ -39,6 +39,10 @@
 
 #include "UsbRadio-Gamepad/UsbRadioGamepad.h"
 
+#elif GAMEPAD_OUTPUT == 5
+
+#include "Switch-USB-Gamepad/SwitchUsbGamepad.h"
+
 #else
 
 #error Unsupported value for GAMEPAD_OUTPUT, must be 0-3

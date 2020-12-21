@@ -7,28 +7,83 @@
 #define ARDUINO_ARCH_ESP32 1
 #include "HIDTypes.h"
 
+#if GAMEPAD_OUTPUT == 5	 // nintendo switch
+
+#define BUTTON_A NSButton_A
+#define BUTTON_B NSButton_B
+#define BUTTON_MENU NSButton_Home
+#define BUTTON_X NSButton_X
+#define BUTTON_Y NSButton_Y
+#define BUTTON_TL NSButton_LeftTrigger
+#define BUTTON_TR NSButton_RightTrigger
+#define BUTTON_TL2 NSButton_LeftThrottle
+#define BUTTON_TR2 NSButton_RightThrottle
+#define BUTTON_SELECT NSButton_Minus
+#define BUTTON_START NSButton_Plus
+#define BUTTON_THUMBL NSButton_LeftStick
+#define BUTTON_THUMBR NSButton_RightStick
+
+#define DPAD_CENTER NSGAMEPAD_DPAD_CENTERED
+#define DPAD_UP NSGAMEPAD_DPAD_UP
+#define DPAD_UP_RIGHT NSGAMEPAD_DPAD_UP_RIGHT
+#define DPAD_RIGHT NSGAMEPAD_DPAD_RIGHT
+#define DPAD_DOWN_RIGHT NSGAMEPAD_DPAD_DOWN_RIGHT
+#define DPAD_DOWN NSGAMEPAD_DPAD_DOWN
+#define DPAD_DOWN_LEFT NSGAMEPAD_DPAD_DOWN_LEFT
+#define DPAD_LEFT NSGAMEPAD_DPAD_LEFT
+#define DPAD_UP_LEFT NSGAMEPAD_DPAD_UP_LEFT
+
+#define AXIS_CENTER 128
+#define AXIS_MAX 255
+#define AXIS_MIN 0
+
+#else
+
 #define BUTTON_A 1
 #define BUTTON_B 2
 #define BUTTON_MENU 4
 #define BUTTON_X 8
 #define BUTTON_Y 16
 #define BUTTON_TL 64
-#define BUTTON_L 64
-#define BUTTON_L1 64
 #define BUTTON_TR 128
-#define BUTTON_R 128
-#define BUTTON_R1 128
 #define BUTTON_TL2 256
-#define BUTTON_L2 256
 #define BUTTON_TR2 512
-#define BUTTON_R2 512
 #define BUTTON_SELECT 1024
 #define BUTTON_START 2048
 #define BUTTON_THUMBL 8192
-#define BUTTON_L3 8192
 #define BUTTON_THUMBR 16384
-#define BUTTON_R3 16384
 
+#define DPAD_CENTER 0
+#define DPAD_UP 1
+#define DPAD_UP_RIGHT 2
+#define DPAD_RIGHT 3
+#define DPAD_DOWN_RIGHT 4
+#define DPAD_DOWN 5
+#define DPAD_DOWN_LEFT 6
+#define DPAD_LEFT 7
+#define DPAD_UP_LEFT 8
+
+#define AXIS_CENTER 0
+#define AXIS_MAX 32768
+#define AXIS_MIN -32767
+
+#endif	// nintendo switch
+
+// aliases
+#define BUTTON_HOME BUTTON_MENU
+#define BUTTON_L BUTTON_TL
+#define BUTTON_L1 BUTTON_TL
+#define BUTTON_R BUTTON_TR
+#define BUTTON_R1 BUTTON_TR
+#define BUTTON_L2 BUTTON_TL2
+#define BUTTON_R2 BUTTON_TR2
+#define BUTTON_L3 BUTTON_THUMBL
+#define BUTTON_R3 BUTTON_THUMBR
+
+#define DPAD_CENTERED DPAD_CENTER
+// end aliases
+
+#if 0
 #define BUTTON_1 1
 #define BUTTON_2 2
 #define BUTTON_3 4
@@ -61,21 +116,7 @@
 #define BUTTON_30 536870912
 #define BUTTON_31 1073741824
 #define BUTTON_32 2147483648
-
-#define DPAD_CENTER 0
-#define DPAD_CENTERED 0
-#define DPAD_UP 1
-#define DPAD_UP_RIGHT 2
-#define DPAD_RIGHT 3
-#define DPAD_DOWN_RIGHT 4
-#define DPAD_DOWN 5
-#define DPAD_DOWN_LEFT 6
-#define DPAD_LEFT 7
-#define DPAD_UP_LEFT 8
-
-#define AXIS_CENTER 0
-#define AXIS_MAX 32768
-#define AXIS_MIN -32767
+#endif
 
 #ifndef GAMEPAD_REPORT_ARRAY_ADD
 // this is used by radio gamepad to send additional info
