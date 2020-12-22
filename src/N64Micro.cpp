@@ -24,12 +24,23 @@ PIN # USAGE
 //#define DEBUG
 
 #ifdef GAMECUBE
+
+/*
+// these are my average values from my apparantly very bad wavebird controller
 #define AXIS_CENTER_IN 135
 #define AXIS_MAX_IN 230
 #define AXIS_MIN_IN 30
 
 #define TRIGGER_MAX_IN 236
 #define TRIGGER_MIN_IN 36
+*/
+// these look like much more proper values from a pelican gc controller
+#define AXIS_CENTER_IN 128
+#define AXIS_MAX_IN 255
+#define AXIS_MIN_IN 0
+
+#define TRIGGER_MAX_IN 255
+#define TRIGGER_MIN_IN 0
 
 #else  // N64
 #define AXIS_CENTER_IN 0
@@ -43,15 +54,16 @@ PIN # USAGE
 #ifdef GAMECUBE
 typedef CGamecubeController NintendoController;
 typedef Gamecube_Report_t ControllerReport;
+#define NINTENDO_REPORT_SIZE 8
 #else  // N64
 typedef CN64Controller NintendoController;
 typedef N64_Report_t ControllerReport;
+#define NINTENDO_REPORT_SIZE 4
 #endif
 
 // Define a Controller
 NintendoController controller(DATA_PIN);
 
-#define NINTENDO_REPORT_SIZE 4
 uint8_t oldReport[NINTENDO_REPORT_SIZE];
 
 GAMEPAD_CLASS gamepad;
