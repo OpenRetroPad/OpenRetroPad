@@ -62,18 +62,36 @@ struct Axis dpadToAxis(uint8_t dpad) {
 	return axis(AXIS_CENTER, AXIS_CENTER);
 }
 
-/*
-long map(long x, long in_min, long in_max, long out_min, long out_max) {
-  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+inline long translate(long x, long in_min, long in_max, long out_min, long out_max) {
+	return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
-*/
 
-inline int16_t translateAxis(int16_t v) {
+inline int16_t translateAxis(long v) {
+	// pin to max/min
+	if (v <= AXIS_MIN_IN) {
+		return AXIS_MIN;
+	} else if (v >= AXIS_MAX_IN) {
+		return AXIS_MAX;
+	}
 	// don't map at all if translation isn't required...
 #if AXIS_CENTER_IN == AXIS_CENTER && AXIS_MIN_IN == AXIS_MIN && AXIS_MAX_IN == AXIS_MAX
 	return v;  // noop
 #else
-	//return v == AXIS_CENTER_IN ? AXIS_CENTER : map(v, AXIS_MIN_IN, AXIS_MAX_IN, AXIS_MIN, AXIS_MAX);
-	return v == AXIS_CENTER_IN ? AXIS_CENTER : (v - AXIS_MIN_IN) * (AXIS_MAX - AXIS_MIN) / (AXIS_MAX_IN - AXIS_MIN_IN) + AXIS_MIN;
+	return v == AXIS_CENTER_IN ? AXIS_CENTER : translate(v, AXIS_MIN_IN, AXIS_MAX_IN, AXIS_MIN, AXIS_MAX);
+#endif
+}
+
+inline uint8_t translateTrigger(long v) {
+	// pin to max/min
+	if (v <= TRIGGER_MIN_IN) {
+		return TRIGGER_MIN;
+	} else if (v >= TRIGGER_MAX_IN) {
+		return TRIGGER_MAX;
+	}
+	// don't map at all if translation isn't required...
+#if TRIGGER_MIN_IN == TRIGGER_MIN && TRIGGER_MAX_IN == TRIGGER_MAX
+	return v;  // noop
+#else
+	return translate(v, TRIGGER_MIN_IN, TRIGGER_MAX_IN, TRIGGER_MIN, TRIGGER_MAX);
 #endif
 }

@@ -37,6 +37,10 @@
 #define AXIS_MAX 255
 #define AXIS_MIN 0
 
+// not supported by horipad yet...
+#define TRIGGER_MAX 255
+#define TRIGGER_MIN 0
+
 #else
 
 #define BUTTON_A 1
@@ -64,8 +68,11 @@
 #define DPAD_UP_LEFT 8
 
 #define AXIS_CENTER 0
-#define AXIS_MAX 32768
+#define AXIS_MAX 32767
 #define AXIS_MIN -32767
+
+#define TRIGGER_MAX 255
+#define TRIGGER_MIN 0
 
 #endif	// nintendo switch
 
@@ -87,10 +94,16 @@
 #define AXIS_CENTER_IN 0
 #endif
 #ifndef AXIS_MAX_IN
-#define AXIS_MAX_IN 32768
+#define AXIS_MAX_IN 32767
 #endif
 #ifndef AXIS_MIN_IN
 #define AXIS_MIN_IN -32767
+#endif
+#ifndef TRIGGER_MAX_IN
+#define TRIGGER_MAX_IN 127
+#endif
+#ifndef TRIGGER_MIN_IN
+#define TRIGGER_MIN_IN -127
 #endif
 
 #if 0
