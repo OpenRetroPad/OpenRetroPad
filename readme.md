@@ -16,6 +16,43 @@ supported values:
   * $output: radio, usb, usbradio, switchusb, bt, debug
   * please note not all boards are compatible with all inputs/outputs, for example esp32 can only do bt, micro can only do radio or usb
 
+Wiring
+------
+
+(quick plea: if you are good at drawing diagrams, please help!)
+
+![DB-25 Pinout](images/db25pins.jpg)
+
+| DB-25 Male Pins     | Arduino Pro Micro GPIO                                      | ESP32 GPIO                |
+|--------------|---------------------------------------------|-----------------------------------------|
+|  1 |  1       |  |
+|  2 |  2       |  |
+|  3 |  3       |  |
+|  4 |  4       |  |
+|  5 |  5       |  |
+|  6 |  6       |  |
+|  7 |  7       |  |
+|  8 |  8       |  |
+|  9 |  9       |  |
+| 10 | 10       |  |
+| 11 | 11       |  |
+| 12 |  -       |  |
+| 13 |  -       |  |
+| 14 | 14       |  |
+| 15 | 15       |  |
+| 16 | 16       |  |
+| 17 |  -       |  |
+| 18 | 18       |  |
+| 19 | 19       |  |
+| 20 | 20       |  |
+| 21 | 21       |  |
+| 22 |  -       |  |
+| 23 | 3.3V VCC |  |
+| 24 | 5V VCC   |  |
+| 25 | GND      |  |
+
+
+
 Credits / Links
 ---------------
 
