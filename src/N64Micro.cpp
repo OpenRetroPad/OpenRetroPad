@@ -1,15 +1,45 @@
 /*
+N64:
       LOOKING AT THE PLUG FROM CONTROLLER
-          /---------\
- PIN 1-> /  o  o  o  \
-        /-------------\
+           . ~~~ .
+       .-~         ~-.
+      /   o   o   o   \
+     /    1   2   3    \
+     |_________________|
 
 
 PIN # USAGE (colors from my extension cable, check your own)
 
-    GND            - red
-    DATA           - white
-    VCC +3.3V ONLY - black
+  1:  GND            - red
+  2:  DATA           - white
+  3:  VCC +3.3V ONLY - black
+
+GAMECUBE:
+      LOOKING AT THE PLUG ON FRONT OF CONSOLE (not coming from controller)
+
+               7
+        .-------------.
+       /       o       \
+      /                 \
+     |     1   2   3     |
+     |     o   o   o     |
+     |                   |
+      \    o   o   o    /
+       \   4   5   6   /
+        `-.         .-'
+            ~-._.-~
+
+   PIN # USAGE (colors from my extension cable, check your own)
+
+  1:  VCC 5V rumble  - grey
+  2:  DATA           - yellow
+  3:  GND            - black
+  4:  GND            - black
+  5:  UNKNOWN
+  6:  VCC 3.3V ONLY  - red
+  7:  GND            - black
+
+  I tie all 3 grounds together
 */
 
 #define DATA_PIN 2
