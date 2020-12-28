@@ -5,14 +5,14 @@
         /-------------\
 
 
-PIN # USAGE
+PIN # USAGE (colors from my extension cable, check your own)
 
-    GND
-    DATA
-    VCC +3.3V ONLY
+    GND            - red
+    DATA           - white
+    VCC +3.3V ONLY - black
 */
 
-#define DATA_PIN 7
+#define DATA_PIN 2
 
 // how often to poll, 100? 14? polling must not occur faster than every 20 ms
 #define POLL_DELAY 14
@@ -123,6 +123,8 @@ void print_report(ControllerReport &controller) {
 #endif
 
 void setup() {
+	// n64 low because it *should* be 3.3V
+	digitalWrite(DATA_PIN, LOW);
 #ifdef DEBUG
 	Serial.begin(115200);
 	if (controller.begin()) {
@@ -172,7 +174,7 @@ void loop() {
 			gamepad.press(c, BUTTON_B);
 		}
 		if (report.z) {
-			gamepad.press(c, BUTTON_TR);
+			gamepad.press(c, BUTTON_TL2);
 		}
 		if (report.l) {
 			gamepad.press(c, BUTTON_L);

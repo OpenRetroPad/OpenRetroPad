@@ -32,9 +32,14 @@ static const int CLOCK_PIN = 3;	 // white
 #endif
 // power red, ground black
 
+//#define DEBUG
+
 #include "gamepad/Gamepad.h"
 
-static const int translateToNES[12] = {1, 8, 2, 3, 4, 5, 6, 7, 0, 8, 8, 8};
+static const uint8_t translateToNES[12] = {1, 8, 2, 3, 4, 5, 6, 7, 0, 8, 8, 8};
+
+static const uint8_t nesButtons[4] = {0, 2, 3, 8};
+static const uint8_t snesButtons[8] = {0, 1, 2, 3, 8, 9, 10, 11};
 
 class GameControllers {
    public:
@@ -59,12 +64,12 @@ class GameControllers {
 		L = 10,
 		R = 11,
 	};
-
 	Type types[GAMEPAD_COUNT];
 	int latchPin;
 	int clockPin;
 	int dataPins[GAMEPAD_COUNT];
 	long buttons[GAMEPAD_COUNT][12];
+	int maxButtons = 12;
 
 	int changedControllers[GAMEPAD_COUNT];
 
@@ -76,13 +81,6 @@ class GameControllers {
 		digitalWrite(latchPin, LOW);
 		pinMode(clockPin, OUTPUT);
 		digitalWrite(clockPin, HIGH);
-		for (int c = 0; c < GAMEPAD_COUNT; c++) {
-			for (int i = 0; i < 12; i++) {
-				buttons[c][i] = -1;
-			}
-			types[c] = NES;	 // todo: if SNES button is ever pressed, change type to SNES, maybe buttons to manually toggle?
-			dataPins[c] = -1;
-		}
 	}
 
 	///This sets the controller type and initializes its individual data pin
@@ -90,6 +88,9 @@ class GameControllers {
 		types[controller] = type;
 		dataPins[controller] = dataPin;
 		pinMode(dataPins[controller], INPUT_PULLUP);
+		for (int i = 0; i < 12; i++) {
+			buttons[controller][i] = -1;
+		}
 	}
 
 	void poll(void (*controllerChanged)(const int controller)) {
@@ -99,28 +100,33 @@ class GameControllers {
 		delayMicroseconds(12);
 		digitalWrite(latchPin, LOW);
 		delayMicroseconds(6);
-		for (int i = 0; i < 12; i++) {
-			for (int c = 0; c < GAMEPAD_COUNT; c++)
-				if (dataPins[c] > -1) {
-					if (digitalRead(dataPins[c])) {
-						if (-1 != buttons[c][i]) {
-							buttons[c][i] = -1;
-							changedControllers[c] = 1;
-						}
-					} else {
-						//++buttons[c][i];
-						//changedControllers[c] = 1;
-						if (0 != buttons[c][i]) {
-							buttons[c][i] = 0;
-							changedControllers[c] = 1;
-						}
+		//Serial.print("snes: ");
+		for (int i = 0; i < maxButtons; i++) {
+			for (int c = 0; c < GAMEPAD_COUNT; c++) {
+				if (digitalRead(dataPins[c])) {
+					// up
+					//Serial.print("-");
+					if (-1 != buttons[c][i]) {
+						buttons[c][i] = -1;
+						changedControllers[c] = 1;
+					}
+				} else {
+					// down
+					//Serial.print(i);
+					//++buttons[c][i];
+					//changedControllers[c] = 1;
+					if (0 != buttons[c][i]) {
+						buttons[c][i] = 0;
+						changedControllers[c] = 1;
 					}
 				}
+			}
 			digitalWrite(clockPin, LOW);
 			delayMicroseconds(6);
 			digitalWrite(clockPin, HIGH);
 			delayMicroseconds(6);
 		}
+		//Serial.println();
 
 		for (int c = 0; c < GAMEPAD_COUNT; c++) {
 			// have any buttons changed state?
@@ -130,15 +136,31 @@ class GameControllers {
 		}
 	}
 
-	int translate(int controller, Button b) const {
+	uint8_t translate(int controller, uint8_t b) {
 		if (types[controller] == SNES)
 			return b;
 		return translateToNES[b];
 	}
 
 	///returns if button is currently down
-	bool down(int controller, Button b) const {
+	bool down(int controller, uint8_t b) {
 		return buttons[controller][translate(controller, b)] >= 0;
+	}
+
+	void pressAll(int controller, void (*pushButton)(const int controller, const uint8_t btn)) {
+		if (types[controller] == SNES) {
+			for (uint8_t i = 0; i < sizeof(snesButtons); i++) {
+				if (buttons[controller][snesButtons[i]] >= 0) {
+					pushButton(controller, snesButtons[i]);
+				}
+			}
+		} else {
+			for (uint8_t i = 0; i < sizeof(nesButtons); i++) {
+				if (buttons[controller][translateToNES[nesButtons[i]]] >= 0) {
+					pushButton(controller, nesButtons[i]);
+				}
+			}
+		}
 	}
 };
 
@@ -161,19 +183,10 @@ GameControllers controllers;
 
 GAMEPAD_CLASS gamepad;
 
-void setup() {
-	gamepad.begin();
-
-	//initialize shared pins
-	controllers.init(LATCH_PIN, CLOCK_PIN);
-
-	//activate first controller ans set the type to SNES
-	for (int c = 0; c < GAMEPAD_COUNT; c++) {
-		controllers.setController(c, GameControllers::NES, DATA_PIN[c]);
-	}
+void dummyControllerChanged(const int c) {
 }
 
-/*
+#ifdef DEBUG
 void controllerChangedDebug(const int c) {
 	Serial.print("controllerChanged!!!!: ");
 	Serial.println(c);
@@ -183,14 +196,62 @@ void controllerChangedDebug(const int c) {
 		Serial.print("; ");
 		Serial.print(btn);
 		Serial.print(", ");
-		Serial.print(controllers.buttons[c][controllers.translate(c, static_cast<GameControllers::Button>(btn))]);
+		Serial.print(controllers.buttons[c][controllers.translate(c, btn)]);
+		Serial.print(",");
+		Serial.print(controllers.buttons[c][btn]);
 	}
 	Serial.println("");
 }
-*/
+#endif	// DEBUG
+
+void setup() {
+	bool allNes = true;
+#ifdef DEBUG
+	delay(5000);
+#endif	// DEBUG
+	gamepad.begin();
+
+	//initialize shared pins
+	controllers.init(LATCH_PIN, CLOCK_PIN);
+
+	//activate first controller and set the type to SNES
+	for (int c = 0; c < GAMEPAD_COUNT; c++) {
+		controllers.setController(c, GameControllers::SNES, DATA_PIN[c]);
+	}
+
+	// poll controllers once to detect NES vs SNES
+	controllers.poll(dummyControllerChanged);
+
+	for (int c = 0; c < GAMEPAD_COUNT; c++) {
+		// for NES, A+X+L+R are down always, re-initialize
+		if (controllers.down(c, GameControllers::A) && controllers.down(c, GameControllers::X) && controllers.down(c, GameControllers::L) && controllers.down(c, GameControllers::R)) {
+#ifdef DEBUG
+			Serial.println("detected NES");
+#endif	// DEBUG
+			controllers.types[c] = GameControllers::NES;
+		} else {
+#ifdef DEBUG
+			Serial.println("detected SNES");
+#endif	// DEBUG
+			allNes = false;
+		}
+	}
+	if (allNes) {
+#ifdef DEBUG
+		Serial.println("detected ONLY NES");
+#endif	// DEBUG
+		controllers.maxButtons = 8;
+	}
+}
+
+void pushButton(const int c, const uint8_t btn) {
+	gamepad.press(c, translateToHid[btn]);
+}
 
 void controllerChanged(const int c) {
-	//controllerChangedDebug(c);
+#ifdef DEBUG
+	controllerChangedDebug(c);
+#endif	// DEBUG
 
 	gamepad.buttons(c, 0);
 	// if start and select are held at the same time, send menu and only menu
@@ -198,13 +259,7 @@ void controllerChanged(const int c) {
 		gamepad.press(c, BUTTON_MENU);
 	} else {
 		// actually send buttons held
-		for (uint8_t btn = 0; btn < 12; btn++) {
-			if (btn > 3 && btn < 8)
-				continue;  // skip dpad
-			if (controllers.down(c, static_cast<GameControllers::Button>(btn))) {
-				gamepad.press(c, translateToHid[btn]);
-			}
-		}
+		controllers.pressAll(c, pushButton);
 	}
 	if (controllers.down(c, GameControllers::DOWN)) {
 		if (controllers.down(c, GameControllers::RIGHT)) {

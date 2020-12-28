@@ -8,17 +8,17 @@
         \_____________________________/
 
 
-PIN # USAGE
+PIN # USAGE (colors from my extension cable, check your own)
 
-    DATA
-    CMD/COMMAND
-    N/C (9 Volts unused)
-    GND
-    VCC
-    ATT
-    CLK/CLOCK
-    N/C
-    ACK
+    DATA                 - brown
+    CMD/COMMAND          - orange
+    N/C (9 Volts unused) - white
+    GND                  - black
+    5V VCC               - red
+    ATT                  - yellow
+    CLK/CLOCK            - blue
+    N/C                  - -
+    ACK                  - green
 
 */
 

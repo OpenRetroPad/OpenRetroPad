@@ -4,7 +4,7 @@
 // number of button presses we wait for USB-HID to connect
 // works within 1 for me but who knows...
 #ifndef GAMEPAD_USBRADIO_DETECT_BUTTONS
-#define GAMEPAD_USBRADIO_DETECT_BUTTONS 1
+#define GAMEPAD_USBRADIO_DETECT_BUTTONS 4
 #endif
 
 #ifndef GAMEPAD_CLASS
