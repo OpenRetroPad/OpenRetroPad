@@ -1,4 +1,19 @@
+/*
+Genesis/Atari/Megadrive:
+      LOOKING AT THE PLUG ON FRONT OF CONSOLE (not coming from controller)
 
+      1   2   3   4   5
+   -----------------------
+   \  o   o   o   o   o  /
+    \   o   o   o   o   /
+     \-----------------/
+        6   7   8   9
+
+PIN # USAGE
+
+  5: 5V VCC
+  8: GND
+*/
 #include "Arduino.h"
 
 #ifndef GAMEPAD_COUNT
@@ -33,11 +48,18 @@ enum
 #define OPT_PIN_READ1(X) (bitRead(reg1, DATA_PIN[c][X]))
 #define OPT_PIN_READ2(X) (bitRead(reg2, DATA_PIN[c][X]))
 
+static const int DATA_PIN_SELECT[GAMEPAD_COUNT] = {
+	5,
+#if GAMEPAD_COUNT > 1
+	7,
+#endif
+};
+
 //individual data pin BIT for each controller, they are read in bulk
 static const int DATA_PIN[GAMEPAD_COUNT][PIN_COUNT] = {
-	{7, 6, 5, 4, 3, 1},
-#if GAMEPAD_COUNT > 1
 	{3, 2, 1, 0, 4, 7},
+#if GAMEPAD_COUNT > 1
+	{7, 6, 5, 4, 3, 1},
 #endif
 };
 
@@ -65,17 +87,17 @@ static const int DATA_PIN[GAMEPAD_COUNT][PIN_COUNT] = {
 #else  // end esp32 pins, start generic pins
 
 static const int DATA_PIN_SELECT[GAMEPAD_COUNT] = {
-	7,
-#if GAMEPAD_COUNT > 1
 	5,
+#if GAMEPAD_COUNT > 1
+	7,
 #endif
 };
 
 //individual data pin for each controller
 static const int DATA_PIN[GAMEPAD_COUNT][PIN_COUNT] = {
-	{18, 19, 20, 21, 14, 15},
-#if GAMEPAD_COUNT > 1
 	{1, 0, 2, 3, 4, 6},
+#if GAMEPAD_COUNT > 1
+	{18, 19, 20, 21, 14, 15},
 #endif
 };
 #endif	// esp32 vs generic pins
@@ -145,10 +167,10 @@ class SegaControllers32U4 {
 
 #if CODE_PLATFORM == 2
 	void readPort(byte c, byte reg1, byte reg2);
+	byte _inputReg3;
+#if GAMEPAD_COUNT > 1
 	byte _inputReg1;
 	byte _inputReg2;
-#if GAMEPAD_COUNT > 1
-	byte _inputReg3;
 #endif	// GAMEPAD_COUNT
 #else
 	void readPort(byte c);
@@ -156,21 +178,6 @@ class SegaControllers32U4 {
 };
 
 SegaControllers32U4::SegaControllers32U4(void) {
-#if CODE_PLATFORM == 2
-	// Setup input pins (A0,A1,A2,A3,14,15 or PF7,PF6,PF5,PF4,PB3,PB1)
-	DDRF &= ~B11110000;	 // input
-	PORTF |= B11110000;	 // high to enable internal pull-up
-	DDRB &= ~B00001010;	 // input
-	PORTB |= B00001010;	 // high to enable internal pull-up
-	// Setup input pins (TXO,RXI,2,3,4,6 or PD3,PD2,PD1,PD0,PD4,PD7)
-	DDRD &= ~B10011111;	 // input
-	PORTD |= B10011111;	 // high to enable internal pull-up
-
-	DDRC |= B01000000;	// Select pins as output
-	DDRE |= B01000000;
-	PORTC |= B01000000;	 // Select pins high
-	PORTE |= B01000000;
-#else
 	for (int c = 0; c < GAMEPAD_COUNT; c++) {
 		// Setup output pin
 		pinMode(DATA_PIN_SELECT[c], OUTPUT);
@@ -181,7 +188,6 @@ SegaControllers32U4::SegaControllers32U4(void) {
 			pinMode(DATA_PIN[c][i], INPUT_PULLUP);
 		}
 	}
-#endif
 
 	_pinSelect = true;
 	for (int c = 0; c < GAMEPAD_COUNT; c++) {
@@ -212,15 +218,15 @@ void SegaControllers32U4::readState() {
 	delayMicroseconds(SC_CYCLE_DELAY);
 
 	// Read all input registers
+	_inputReg3 = PIND;
+#if GAMEPAD_COUNT > 1
 	_inputReg1 = PINF;
 	_inputReg2 = PINB;
-#if GAMEPAD_COUNT > 1
-	_inputReg3 = PIND;
 #endif
 
-	readPort(0, _inputReg1, _inputReg2);
+	readPort(0, _inputReg3, _inputReg3);
 #if GAMEPAD_COUNT > 1
-	readPort(1, _inputReg3, _inputReg3);
+	readPort(1, _inputReg1, _inputReg2);
 #endif
 }
 
