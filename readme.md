@@ -33,7 +33,7 @@ Wiring
 |  6            |  6                     |  5         | -        | -      | -      | -        | -        | P1-9        |
 |  7            |  7                     | 18         | CE       | -      | -      | -        | -        | P2-7*       |
 |  8            |  8                     | 19         | CSN      | -      | -      | -        | -        | -           |
-|  9            |  9                     | 21         | -        | -      | -      | -        | -        | -           |
+|  9            |  9 > 1k Ω              | 35 > 1k Ω  | -        | 330 Ω  | 100 Ω  | 220 Ω    | 680 Ω    | 470 Ω       |
 | 10            | 10                     |  3         | -        | -      | -      | -        | -        | -           |
 | 11            |  0                     |  1         | -        | -      | -      | -        | -        | P1-2        |
 | 12            | -                      | 22         | -        | -      | -      | -        | -        | -           |
@@ -46,12 +46,13 @@ Wiring
 | 19            | 19                     | 25         | -        | DATA2  | -      | -        | -        | P2-2        |
 | 20            | 20                     | 33         | -        | DATA3  | -      | -        | -        | P2-3        |
 | 21            | 21                     | 32         | -        | DATA4  | -      | -        | -        | P2-4        |
-| 22            | -                      | 35         | -        | -      | -      | -        | -        | -           |
+| 22            | -                      | -          | -        | -      | -      | -        | -        | -           |
 | 23            | -                      | 3.3V VCC   | 3.3V VCC | -      | -      | 3.3V VCC | 3.3V VCC | -           |
 | 24            | 5V VCC OUT             | 5V VCC     | 5V VCC   | 5V VCC | 5V VCC | -        | 5V VCC   | PX-5 5V VCC |
 | 25            | GND                    | GND        | GND      | GND    | -      | GND      | GND      | PX-8 GND    |
 
 * 2nd player Genesis is incompatible with Radio because it uses the same pins, 1 player Genesis is compatible
+Ω This is optional and only used for dongle detection. For DB-25 pin 9: On the micro, run to pin 9 to 5V VCC with a 1k resistor. On ESP32, run to pin 35 to 3.3V VCC with a 1k resistor.  On each dongle, run a resistor of the given value between DB-25 pin 9 and GND.
 
 Credits / Links
 ---------------
