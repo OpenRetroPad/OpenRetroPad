@@ -9,7 +9,17 @@
 
 #include "gamepad/Gamepad.h"
 
-RF24 radio(7, 8);  // CE, CSN
+#if defined(ARDUINO_ARCH_ESP32)
+// esp32
+#define CE_PIN 18
+#define CSN_PIN 19
+#else
+// micro
+#define CE_PIN 7
+#define CSN_PIN 8
+#endif	// ARDUINO_ARCH_ESP32
+
+RF24 radio(CE_PIN, CSN_PIN);
 
 const byte address[13] = "OpenRetroPad";
 

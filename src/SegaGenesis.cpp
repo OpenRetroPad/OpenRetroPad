@@ -70,17 +70,17 @@ static const int DATA_PIN[GAMEPAD_COUNT][PIN_COUNT] = {
 
 #if defined(ARDUINO_ARCH_ESP32)
 static const int DATA_PIN_SELECT[GAMEPAD_COUNT] = {
-	5,
+	17,
 #if GAMEPAD_COUNT > 1
-	25,
+	18,
 #endif
 };
 
 //individual data pin for each controller
 static const int DATA_PIN[GAMEPAD_COUNT][PIN_COUNT] = {
-	{15, 2, 4, 16, 17, 18},
+	{15, 1, 2, 4, 16, 5},
 #if GAMEPAD_COUNT > 1
-	{36, 39, 34, 35, 33, 27},
+	{26, 25, 33, 32, 12, 14},
 #endif
 };
 

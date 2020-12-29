@@ -24,10 +24,10 @@ PIN # USAGE (colors from my extension cable, check your own)
 
 #if defined(ARDUINO_ARCH_ESP32)
 
-#define DATA1 13
-#define CMD1 12
-#define ATT1 14
-#define CLK1 27
+#define DATA1 2
+#define CMD1 4
+#define ATT1 16
+#define CLK1 17
 
 #define CTRL_BYTE_DELAY 18
 
