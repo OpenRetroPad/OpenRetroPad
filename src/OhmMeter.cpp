@@ -11,15 +11,13 @@ micro values:
 
 #if defined(ARDUINO_ARCH_ESP32)
 
-int analogPin = 35;
-int Vin = 3.3;
-auto steps = 4095.0;
+float Vin = 3.3;
+float steps = 4095.0;
 
 #else
 
-int analogPin = 9;
-int Vin = 5;
-auto steps = 1024.0;
+float Vin = 5;
+float steps = 1024.0;
 
 #endif	// ARDUINO_ARCH_ESP32
 
@@ -27,6 +25,8 @@ auto steps = 1024.0;
 float R1 = 1000;
 
 #include "Arduino.h"
+
+#include "pins.h"
 
 int raw = 0;
 float Vout = 0;
@@ -38,7 +38,7 @@ void setup() {
 }
 
 void loop() {
-	raw = analogRead(analogPin);
+	raw = analogRead(OR_PIN_9);
 	if (raw) {
 		buffer = raw * Vin;
 		Vout = (buffer) / steps;

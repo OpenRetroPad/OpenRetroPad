@@ -6,46 +6,25 @@
 #endif
 #define BUTTON_COUNT 12	 // SNES has 12, NES only has 8
 
+#include "pins.h"
+
 //shared pins between all controllers
-#if defined(ARDUINO_ARCH_ESP32)
-// ESP32
-static const int LATCH_PIN = 2;	 // brown
-static const int CLOCK_PIN = 4;	 // white
+static const int LATCH_PIN = OR_PIN_2;	// brown
+static const int CLOCK_PIN = OR_PIN_3;	// white
 
 //individual data pin for each controller
 static const int DATA_PIN[GAMEPAD_COUNT] = {
-	26,
+	OR_PIN_18,
 #if GAMEPAD_COUNT > 1
-	25,
+	OR_PIN_19,
 #endif
 #if GAMEPAD_COUNT > 2
-	33,
+	OR_PIN_20,
 #endif
 #if GAMEPAD_COUNT > 3
-	32,
+	OR_PIN_21,
 #endif
 };
-
-#else
-// micro
-static const int LATCH_PIN = 2;	 // brown
-static const int CLOCK_PIN = 3;	 // white
-
-//individual data pin for each controller
-static const int DATA_PIN[GAMEPAD_COUNT] = {
-	18,
-#if GAMEPAD_COUNT > 1
-	19,
-#endif
-#if GAMEPAD_COUNT > 2
-	20,
-#endif
-#if GAMEPAD_COUNT > 3
-	21,
-#endif
-};
-
-#endif
 // power red, ground black
 
 //#define DEBUG

@@ -1,6 +1,3 @@
-
-#include "Arduino.h"
-
 /*
         LOOKING AT THE PLUG
         -------------------------------
@@ -22,25 +19,24 @@ PIN # USAGE (colors from my extension cable, check your own)
 
 */
 
-#if defined(ARDUINO_ARCH_ESP32)
+#include "Arduino.h"
 
-#define DATA1 2
-#define CMD1 4
-#define ATT1 16
-#define CLK1 17
+#include "pins.h"
+
+#define DATA1 OR_PIN_2
+#define CMD1 OR_PIN_3
+#define ATT1 OR_PIN_4
+#define CLK1 OR_PIN_5
+
+#if defined(ARDUINO_ARCH_ESP32)
 
 #define CTRL_BYTE_DELAY 18
 
 #else
 
-#define DATA1 2
-#define CMD1 3
-#define ATT1 4
-#define CLK1 5
-
 #define CTRL_BYTE_DELAY 6
 
-#endif	// esp32 vs generic pins
+#endif	// esp32 vs micro delay
 
 #ifndef GAMEPAD_COUNT
 #define GAMEPAD_COUNT 4

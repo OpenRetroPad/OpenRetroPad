@@ -42,7 +42,9 @@ GAMECUBE:
   I tie all 3 grounds together
 */
 
-#define DATA_PIN 2
+#include "pins.h"
+
+#define DATA_PIN OR_PIN_2
 
 // how often to poll, 100? 14? polling must not occur faster than every 20 ms
 #define POLL_DELAY 14

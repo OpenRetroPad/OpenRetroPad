@@ -13,7 +13,9 @@
 
 #include "../common.h"
 
-RF24 radio(7, 8);  // CE, CSN
+#include "../../pins.h"
+
+RF24 radio(OR_PIN_7, OR_PIN_8);	 // CE, CSN
 const byte address[13] = "OpenRetroPad";
 
 class RadioGamepad : public AbstractGamepad {

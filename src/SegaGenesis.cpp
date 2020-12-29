@@ -43,17 +43,19 @@ enum
 	SC_BTN_RIGHT = 8,
 };
 
+#include "pins.h"
+
+static const int DATA_PIN_SELECT[GAMEPAD_COUNT] = {
+	OR_PIN_5,
+#if GAMEPAD_COUNT > 1
+	OR_PIN_7,
+#endif
+};
+
 #if CODE_PLATFORM == 2
 
 #define OPT_PIN_READ1(X) (bitRead(reg1, DATA_PIN[c][X]))
 #define OPT_PIN_READ2(X) (bitRead(reg2, DATA_PIN[c][X]))
-
-static const int DATA_PIN_SELECT[GAMEPAD_COUNT] = {
-	5,
-#if GAMEPAD_COUNT > 1
-	7,
-#endif
-};
 
 //individual data pin BIT for each controller, they are read in bulk
 static const int DATA_PIN[GAMEPAD_COUNT][PIN_COUNT] = {
@@ -68,39 +70,13 @@ static const int DATA_PIN[GAMEPAD_COUNT][PIN_COUNT] = {
 #define OPT_PIN_READ1(X) (digitalRead(DATA_PIN[c][X]))
 #define OPT_PIN_READ2(X) (digitalRead(DATA_PIN[c][X]))
 
-#if defined(ARDUINO_ARCH_ESP32)
-static const int DATA_PIN_SELECT[GAMEPAD_COUNT] = {
-	17,
-#if GAMEPAD_COUNT > 1
-	18,
-#endif
-};
-
 //individual data pin for each controller
 static const int DATA_PIN[GAMEPAD_COUNT][PIN_COUNT] = {
-	{15, 1, 2, 4, 16, 5},
+	{OR_PIN_1, OR_PIN_11, OR_PIN_2, OR_PIN_3, OR_PIN_4, OR_PIN_6},
 #if GAMEPAD_COUNT > 1
-	{26, 25, 33, 32, 12, 14},
+	{OR_PIN_18, OR_PIN_19, OR_PIN_20, OR_PIN_21, OR_PIN_14, OR_PIN_15},
 #endif
 };
-
-#else  // end esp32 pins, start generic pins
-
-static const int DATA_PIN_SELECT[GAMEPAD_COUNT] = {
-	5,
-#if GAMEPAD_COUNT > 1
-	7,
-#endif
-};
-
-//individual data pin for each controller
-static const int DATA_PIN[GAMEPAD_COUNT][PIN_COUNT] = {
-	{1, 0, 2, 3, 4, 6},
-#if GAMEPAD_COUNT > 1
-	{18, 19, 20, 21, 14, 15},
-#endif
-};
-#endif	// esp32 vs generic pins
 
 #endif	// CODE_PLATFORM
 
