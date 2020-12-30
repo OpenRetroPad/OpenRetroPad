@@ -25,12 +25,12 @@ Wiring
 
 | DB-25 Pins    | Arduino Pro Micro GPIO | ESP32 GPIO | Radio    | SNES   | PSX    | N64      | Gamecube | Genesis     |
 |---------------|------------------------|------------|----------|--------|--------|----------|----------|-------------|
-|  1  TX        |  1                     |  1         | -        | -      | -      | -        | -        | P1-1        |
-|  2  SDA       |  2                     | 21         | -        | LATCH  | DATA   | DATA1    | DATA1    | P1-3        |
-|  3  SCL       |  3                     | 22         | -        | CLOCK  | CMD    | -        | -        | P1-4        |
-|  4  Analog    |  4                     | 15         | -        | -      | ATT    | -        | -        | P1-6        |
-|  5  Digital   |  5                     | 16         | -        | -      | CLK    | -        | -        | P1-7        |
-|  6  Analog    |  6                     |  2         | -        | -      | -      | -        | -        | P1-9        |
+|  1  TX        |  1                     |  1         | -        | LATCH  | -      | -        | -        | P1-1        |
+|  2  SDA       |  2                     | 21         | -        | CLOCK  | DATA   | DATA1    | DATA1    | P1-3        |
+|  3  SCL       |  3                     | 22         | -        | DATA1  | CMD    | -        | -        | P1-4        |
+|  4  Analog    |  4                     | 15         | -        | DATA2  | ATT    | -        | -        | P1-6        |
+|  5  Digital   |  5                     | 16         | -        | DATA3  | CLK    | -        | -        | P1-7        |
+|  6  Analog    |  6                     |  2         | -        | DATA4  | -      | -        | -        | P1-9        |
 |  7  Digital   |  7                     | 17         | CE       | -      | -      | -        | -        | P2-7*       |
 |  8  Analog    |  8                     |  4         | CSN      | -      | -      | -        | -        | -           |
 |  9  Analog    |  9 > 1k Ω              | 35 > 1k Ω  | -        | 330 Ω  | 100 Ω  | 220 Ω    | 680 Ω    | 470 Ω       |
@@ -42,10 +42,10 @@ Wiring
 | 15  SCLK      | 15                     | 14         | SCLK     | -      | -      | -        | -        | P2-9*       |
 | 16  MOSI      | 16                     | 13         | MOSI     | -      | -      | -        | -        | -           |
 | 17  -         | -                      | -          | -        | -      | -      | -        | -        | -           |
-| 18  Analog    | 18                     | 27         | -        | DATA1  | -      | -        | -        | P2-1        |
-| 19  Analog    | 19                     | 26         | -        | DATA2  | -      | -        | -        | P2-2        |
-| 20  Analog    | 20                     | 25         | -        | DATA3  | -      | -        | -        | P2-3        |
-| 21  Analog    | 21                     | 33         | -        | DATA4  | -      | -        | -        | P2-4        |
+| 18  Analog    | 18                     | 27         | -        | -      | -      | -        | -        | P2-1        |
+| 19  Analog    | 19                     | 26         | -        | -      | -      | -        | -        | P2-2        |
+| 20  Analog    | 20                     | 25         | -        | -      | -      | -        | -        | P2-3        |
+| 21  Analog    | 21                     | 33         | -        | -      | -      | -        | -        | P2-4        |
 | 22  -         | -                      | -          | -        | -      | -      | -        | -        | -           |
 | 23  3.3V VCC  | -                      | 3.3V VCC   | 3.3V VCC | -      | -      | 3.3V VCC | 3.3V VCC | -           |
 | 24  5V VCC    | 5V VCC OUT             | 5V VCC     | 5V VCC   | 5V VCC | 5V VCC | -        | 5V VCC   | PX-5 5V VCC |

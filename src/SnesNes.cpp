@@ -9,20 +9,20 @@
 #include "pins.h"
 
 //shared pins between all controllers
-static const int LATCH_PIN = OR_PIN_2;	// brown
-static const int CLOCK_PIN = OR_PIN_3;	// white
+static const int LATCH_PIN = OR_PIN_1;	// brown
+static const int CLOCK_PIN = OR_PIN_2;	// white
 
 //individual data pin for each controller
 static const int DATA_PIN[GAMEPAD_COUNT] = {
-	OR_PIN_18,
+	OR_PIN_3,
 #if GAMEPAD_COUNT > 1
-	OR_PIN_19,
+	OR_PIN_4,
 #endif
 #if GAMEPAD_COUNT > 2
-	OR_PIN_20,
+	OR_PIN_5,
 #endif
 #if GAMEPAD_COUNT > 3
-	OR_PIN_21,
+	OR_PIN_6,
 #endif
 };
 // power red, ground black
@@ -89,7 +89,7 @@ class GameControllers {
 	}
 
 	void poll(void (*controllerChanged)(const int controller)) {
-		memset(changedControllers, 0, GAMEPAD_COUNT);
+		memset(changedControllers, 0, sizeof(changedControllers));
 
 		digitalWrite(latchPin, HIGH);
 		delayMicroseconds(12);
