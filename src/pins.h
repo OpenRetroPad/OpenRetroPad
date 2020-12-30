@@ -6,24 +6,25 @@
 
 #if defined(ARDUINO_ARCH_ESP32)
 // esp32
-#define OR_PIN_1 1
+#define OR_PIN_1 19
 #define OR_PIN_2 21
 #define OR_PIN_3 22
-#define OR_PIN_4 15
+#define OR_PIN_4 15	 // pwm at boot
 #define OR_PIN_5 16
-#define OR_PIN_6 2
+#define OR_PIN_6 2	// connected to led
 #define OR_PIN_7 17
 #define OR_PIN_8 4
 #define OR_PIN_9 35
 #define OR_PIN_10 32
-#define OR_PIN_11 3
-#define OR_PIN_14 12
-#define OR_PIN_15 14
+#define OR_PIN_11 18
+#define OR_PIN_14 12  // boot fail if pulled high
+#define OR_PIN_15 14  // pwm at boot
 #define OR_PIN_16 13
 #define OR_PIN_18 27
 #define OR_PIN_19 26
 #define OR_PIN_20 25
 #define OR_PIN_21 33
+// 23
 #else
 // micro
 #define OR_PIN_1 1

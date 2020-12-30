@@ -12,11 +12,14 @@ PIN # USAGE
     VCC +3.3V ONLY
 */
 
-#define DATA_PIN 13
 #include "Arduino.h"
 
-//#define PRINT_Y_AXIS_VALUES 1
-//#define PRINT_X_AXIS_VALUES 1
+#include "pins.h"
+
+#define DATA_PIN OR_PIN_2
+
+#define PRINT_Y_AXIS_VALUES 1
+#define PRINT_X_AXIS_VALUES 1
 //#define PLOT_CONSOLE_POLLING 1
 #define DEBUG
 
@@ -80,14 +83,7 @@ int bitResolution;
  *  Must be run from RAM to defy timing differences introduced from
  *  reading Code from ESP32's SPI Flash Chip.
 */
-//#ifdef ARDUINO_ARCH_ESP32
-#if defined(CONFIG_BT_ENABLED)
-void IRAM_ATTR sendCommand(byte command)
-#else
-// todo: what should be done here??
-void sendCommand(byte command)
-#endif
-{
+void IRAM_ATTR sendCommand(byte command) {
 	// the current bit to write
 	bool bit;
 
@@ -200,21 +196,30 @@ void populateControllerStruct(ControllerData *data) {
 	for (int i = 0; i < 8; i++) {
 		data->xAxis += (data->xAxisRaw[i] * (0x80 >> (i)));
 		data->yAxis += (data->yAxisRaw[i] * (0x80 >> (i)));
-
-// print y axis values
-#ifdef PRINT_Y_AXIS_VALUES
-		Serial.printf(
-			"yRaw: %i %i %i %i %i %i %i %i\n", data->yAxisRaw[0], data->yAxisRaw[1], data->yAxisRaw[2], data->yAxisRaw[3], data->yAxisRaw[4], data->yAxisRaw[5], data->yAxisRaw[6], data->yAxisRaw[7]);
-		Serial.printf("yAxis: %i \n", data->yAxis);
-#endif
-
-// print x axis values
-#ifdef PRINT_X_AXIS_VALUES
-		Serial.printf(
-			"xRaw: %i %i %i %i %i %i %i %i\n", data->xAxisRaw[0], data->xAxisRaw[1], data->xAxisRaw[2], data->xAxisRaw[3], data->xAxisRaw[4], data->xAxisRaw[5], data->xAxisRaw[6], data->xAxisRaw[7]);
-		Serial.printf("xAxis: %i \n", data->xAxis);
-#endif
 	}
+
+// print axis values
+#ifdef DEBUG
+	Serial.printf("yRaw: %i %i %i %i %i %i %i %i xRaw: %i %i %i %i %i %i %i %i yAxis: %03i xAxis: %03i",
+				  data->yAxisRaw[0],
+				  data->yAxisRaw[1],
+				  data->yAxisRaw[2],
+				  data->yAxisRaw[3],
+				  data->yAxisRaw[4],
+				  data->yAxisRaw[5],
+				  data->yAxisRaw[6],
+				  data->yAxisRaw[7],
+				  data->xAxisRaw[0],
+				  data->xAxisRaw[1],
+				  data->xAxisRaw[2],
+				  data->xAxisRaw[3],
+				  data->xAxisRaw[4],
+				  data->xAxisRaw[5],
+				  data->xAxisRaw[6],
+				  data->xAxisRaw[7],
+				  data->yAxis,
+				  data->xAxis);
+#endif
 
 	// decode xAxis two's complement
 	if (data->xAxis & 0x80) {
@@ -350,7 +355,7 @@ void loop() {
 	//checkUpdateCombo(&controller);
 
 #ifdef DEBUG
-	Serial.print("buttons: ");
+	Serial.print(" buttons: ");
 	Serial.print(controller.buttonA ? "A" : "-");
 	Serial.print(controller.buttonB ? "B" : "-");
 	Serial.print(controller.buttonZ ? "Z" : "-");
