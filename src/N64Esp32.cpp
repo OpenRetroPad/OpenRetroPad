@@ -16,12 +16,13 @@ PIN # USAGE
 
 #include "pins.h"
 
-#define DATA_PIN OR_PIN_2
+#define DATA_PIN 23
 
-#define PRINT_Y_AXIS_VALUES 1
-#define PRINT_X_AXIS_VALUES 1
+//#define PRINT_Y_AXIS_VALUES 1
+//#define PRINT_X_AXIS_VALUES 1
 //#define PLOT_CONSOLE_POLLING 1
 #define DEBUG
+#define PRINT_DATA
 
 #ifndef GAMEPAD_COUNT
 #define GAMEPAD_COUNT 1
@@ -37,13 +38,21 @@ PIN # USAGE
 #define LINE_WRITE_HIGH pinMode(DATA_PIN, INPUT_PULLUP)
 #define LINE_WRITE_LOW pinMode(DATA_PIN, OUTPUT)
 
-#define DATA_SIZE 450  // number of sample points to poll
-#define DATA_OFFSET 0  // number of samples to ignore after staring to poll
-
 #define MAX_INCLINE_AXIS_X 60
 #define MAX_INCLINE_AXIS_Y 60
 
-#define BIT_THRESHOLD 6
+#define DATA_SIZE 1536	// number of sample points to poll
+#define CALIBRATE_PASSES 5
+
+#define NUM_BITS 32
+
+// buffer to hold data being read from controller
+bool buffer[DATA_SIZE];
+
+// bit resolution and offsets
+int bitOffsets[NUM_BITS];
+int bitResolution = 0;
+int bitsToRead = DATA_SIZE;
 
 GAMEPAD_CLASS gamepad;
 
@@ -72,12 +81,75 @@ struct ControllerData {
 	bool yAxisRaw[8];
 };
 
-// buffer to hold data being read from controller
-bool buffer[DATA_SIZE + DATA_OFFSET];
+void updateOffsetsAndResolution() {
+	// the current bit counter
+	int bitCounter = 0;
 
-// bit resolution and offsets
-int bitOffsets[32];
-int bitResolution;
+	// to hold the number of 1's in this bit
+	int thisResolution = 0;
+
+	// current index
+	int i = 0;
+
+	// we might be further refining a previous calibration, if non-zero, remove existing bitResolution
+	for (int i = 0; i < NUM_BITS; i++) {
+		bitOffsets[i] += bitResolution;
+	}
+
+	for (; i < DATA_SIZE; i++) {
+		if (buffer[i] == false) {
+			// we skip all leading 1's
+			break;
+		}
+	}
+
+	// iterate over buffer
+	for (; i < DATA_SIZE - 1 && bitCounter < NUM_BITS; i++) {
+		if (buffer[i] == true) {
+			++thisResolution;
+			// if a falling edge is detected
+			if (buffer[1 + i] == false) {
+				// store bit's earliest possible beginning offsets
+				int thisOffset = i - thisResolution + 1;
+				if (bitOffsets[bitCounter] == 0 || bitOffsets[bitCounter] > thisOffset) {
+					bitOffsets[bitCounter] = thisOffset;
+				}
+
+				// store max resolution in bitResolution
+				if (thisResolution > bitResolution) {
+					bitResolution = thisResolution;
+				}
+
+				// reset thisResolution
+				thisResolution = 0;
+				// increment bitCounter
+				++bitCounter;
+			}
+		}
+	}
+
+	// calculate bit's beginning offsets by subtracting resolution
+	// if this index is 0, button is not pressed, if 1, button is pressed
+	for (int i = 0; i < NUM_BITS; i++) {
+		bitOffsets[i] -= bitResolution;
+	}
+}
+
+void calcBitsToRead() {
+	bitsToRead = bitOffsets[NUM_BITS - 1] + 1;
+	if (bitsToRead < NUM_BITS * 2) {
+		// todo: not enough, error out...
+		while (true) {
+			printf("not enough bitsToRead, increase DATA_SIZE ???\n");
+			delay(5000);
+		}
+	}
+}
+
+/* Function to extract a controller bit from the buffer of returned data */
+void getBit(bool *bit, int offset, bool *data) {
+	*bit = data[offset] == true;
+}
 
 /** Function to send a Command to the attached N64-Controller.
  *  Must be run from RAM to defy timing differences introduced from
@@ -87,8 +159,8 @@ void IRAM_ATTR sendCommand(byte command) {
 	// the current bit to write
 	bool bit;
 
-	// clear output buffer
-	memset(buffer, 0, DATA_SIZE + DATA_OFFSET);
+	// clear output buffer, todo: really need to do this????
+	//memset(buffer, 0, DATA_SIZE);
 
 	noInterrupts();
 
@@ -111,38 +183,37 @@ void IRAM_ATTR sendCommand(byte command) {
 	delayMicroseconds(2);
 
 	// read returned data as fast as possible
-	for (int i = 0; i < DATA_SIZE + DATA_OFFSET; i++) {
-		buffer[i] = digitalRead(DATA_PIN);
+	for (int i = 0; i < bitsToRead; i++) {
+		//buffer[i] = digitalRead(DATA_PIN);
+		// this is faster:
+#if DATA_PIN < 32
+		buffer[i] = (GPIO.in >> DATA_PIN) & 0x1;
+#elif DATA_PIN < 40
+		buffer[i] = (GPIO.in1.val >> (DATA_PIN - 32)) & 0x1;
+#else
+
+#error unsupported DATA_PIN must be <40
+
+#endif
+		//delayMicroseconds(1);
 	}
 
 	interrupts();
 
 // plot polling process from controller if unstructed to
 #ifdef PLOT_CONSOLE_POLLING
-	for (int i = 0; i < DATA_SIZE + DATA_OFFSET; i++) {
+	for (int i = 0; i < bitsToRead; i++) {
 		Serial.println(buffer[i] * 2500);
 	}
+
 #endif
-}
 
-/* Function to extract a controller bit from the buffer of returned data */
-void getBit(bool *bit, int offset, bool *data) {
-	// sanity check offset
-	if (offset < 0)
-		offset = 0;
-
-	// count
-	short count = 0;
-
-	// get count from offset to offset + length
-	for (int i = offset + DATA_OFFSET; i < offset + bitResolution; i++) {
-		count += *(data + i);
+#ifdef PRINT_DATA
+	for (int i = 0; i < bitsToRead; i++) {
+		printf(buffer[i] ? "1" : "0");
 	}
-
-	// if offset surpasses threshold set bit
-	*bit = false;
-	if (count > BIT_THRESHOLD)
-		*bit = true;
+	printf("\n----------------\n");
+#endif
 }
 
 /** Function to populate the controller struct if command 0x01 was sent.
@@ -153,22 +224,21 @@ void getBit(bool *bit, int offset, bool *data) {
  */
 void populateControllerStruct(ControllerData *data) {
 	// first byte
-	getBit(&(data->buttonA), bitOffsets[0], &buffer[0]);
-	getBit(&(data->buttonB), bitOffsets[1], &buffer[0]);
-	getBit(&(data->buttonZ), bitOffsets[2], &buffer[0]);
-	getBit(&(data->buttonStart), bitOffsets[3], &buffer[0]);
-	getBit(&(data->DPadUp), bitOffsets[4], &buffer[0]);
-	getBit(&(data->DPadDown), bitOffsets[5], &buffer[0]);
-	getBit(&(data->DPadLeft), bitOffsets[6], &buffer[0]);
-	getBit(&(data->DPadRight), bitOffsets[7], &buffer[0]);
+	data->buttonA = buffer[bitOffsets[0]];
+	data->buttonB = buffer[bitOffsets[1]];
+	data->buttonZ = buffer[bitOffsets[2]];
+	data->buttonStart = buffer[bitOffsets[3]];
+	data->DPadUp = buffer[bitOffsets[4]];
+	data->DPadDown = buffer[bitOffsets[5]];
+	data->DPadLeft = buffer[bitOffsets[6]];
+	data->DPadRight = buffer[bitOffsets[7]];
 
 	// second byte, first two bits are unused
-	getBit(&(data->buttonL), bitOffsets[10], &buffer[0]);
-	getBit(&(data->buttonR), bitOffsets[11], &buffer[0]);
-	getBit(&(data->CUp), bitOffsets[12], &buffer[0]);
-	getBit(&(data->CDown), bitOffsets[13], &buffer[0]);
-	getBit(&(data->CLeft), bitOffsets[14], &buffer[0]);
-	getBit(&(data->CRight), bitOffsets[15], &buffer[0]);
+	data->buttonL = buffer[bitOffsets[10]];
+	data->buttonR = buffer[bitOffsets[11]];
+	data->CUp = buffer[bitOffsets[12]];
+	data->CDown = buffer[bitOffsets[13]];
+	data->CRight = buffer[bitOffsets[14]];
 
 	// third byte
 	getBit(&(data->xAxisRaw[0]), bitOffsets[16], &buffer[0]);
@@ -246,76 +316,18 @@ void populateControllerStruct(ControllerData *data) {
 	//Serial.printf("xaxis: %-3i yaxis: %-3i \n",data->xAxis,data->yAxis);
 }
 
-void updateOffsetsAndResolution() {
-	// the current bit counter
-	int bitCounter = 0;
-
-	// to hold the offset of A Button's falling edge
-	int bitAfallingOffset = 0;
-
-	// iterate over buffer
-	for (int i = 0; i < DATA_SIZE + DATA_OFFSET - 1; i++) {
-		// if a falling edge is detected
-		if (buffer[i] == true && buffer[1 + i] == false) {
-			// store bit's end offset
-			bitOffsets[bitCounter] = i + 1;
-
-			// if it's the A button store offset of the falling edge
-			if (bitCounter == 0)
-				bitAfallingOffset = i + 1;
-
-			// if it's the B button calculate the bit Resolution
-			if (bitCounter == 1)
-				bitResolution = (i + 1) - bitAfallingOffset;
-
-			// increment bit counter
-			bitCounter++;
-		}
-	}
-
-	//Serial.printf("Bit resolution is %i \n", bitResolution);
-
-	// calculate bit's beginning offsets by subtracting resolution
-	for (int i = 0; i < 32; i++) {
-		bitOffsets[i] -= bitResolution;
-		//Serial.printf("beginning of bit %i detected @ begin+%i \n", i + 1, bitOffsets[i]);
-	}
-}
-
 ControllerData controller;
 
-void setup() {
-#ifdef DEBUG
-	Serial.begin(115200);
-#endif
-
-	gamepad.begin();
-
-	// setup io pins
-	//setupIO();
-	// the controller data line
-	LINE_WRITE_HIGH;
-
-#ifdef PLOT_CONSOLE_POLLING
-	delay(5000);
-	sendCommand(0x01);
-	while (true)
-		;
-#endif
-
-	delay(5000);
-
-	sendCommand(0x01);
-	updateOffsetsAndResolution();
-}
-
-void loop() {
+void loope() {
 	// polling must not occur faster than every 20 ms
-	delay(14);
+	//delay(14);
+	delay(30);
+	//delay(2000); // todo: change to above
 
 	//Serial.println("sending command to n64");
 	// send command 0x01 to n64 controller
 	sendCommand(0x01);
+	//updateOffsetsAndResolution();
 
 	// store received data in controller struct
 	populateControllerStruct(&controller);
@@ -384,4 +396,60 @@ void loop() {
 #endif
 
 	//delay(500);
+}
+
+void pinned_loop() {
+	while (true) {
+		loope();
+	}
+}
+
+void setup() {
+#ifdef DEBUG
+	Serial.begin(115200);
+	delay(5000);
+#endif
+
+	gamepad.begin();
+
+	// setup io pins
+	//setupIO();
+	// the controller data line
+	LINE_WRITE_HIGH;
+
+#ifdef PLOT_CONSOLE_POLLING
+	sendCommand(0x01);
+	while (true)
+		;
+#endif
+
+	for (int i = 0; i < CALIBRATE_PASSES; ++i) {
+		sendCommand(0x01);
+		updateOffsetsAndResolution();
+		if (i != CALIBRATE_PASSES) {
+			delay(14);
+		}
+	}
+	calcBitsToRead();
+#ifdef DEBUG
+	printf("bitOffsets: ");
+	for (int i = 0; i < NUM_BITS; i++) {
+		printf("%i:%i ", i, bitOffsets[i]);
+	}
+	printf("\n");
+	printf("bitOffsets: ");
+	for (int i = 0; i < NUM_BITS; i++) {
+		printf("%i, ", bitOffsets[i]);
+	}
+	printf("\n");
+	printf("bitResolution: %i\n", bitResolution);
+	delay(5000);
+#endif
+
+	//xTaskCreatePinnedToCore(pinned_loop, "gbuttons", 2048, NULL, 1, NULL, 0);
+	//xTaskCreatePinnedToCore(pinned_loop, "gbuttons", 2048, NULL, 1, NULL, 1);
+}
+
+void loop() {
+	loope();
 }
