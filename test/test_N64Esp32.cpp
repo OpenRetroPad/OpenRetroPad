@@ -30,6 +30,8 @@ int bitOffsets[NUM_BITS];
 int bitResolution = 0;
 int bitsToRead = DATA_SIZE;
 
+bool returnedBits[NUM_BITS];
+
 struct ControllerData {
 	bool buttonA;
 	bool buttonB;
@@ -71,6 +73,7 @@ void updateOffsetsAndResolution() {
 	for (int i = 0; i < NUM_BITS; i++) {
 		bitOffsets[i] += bitResolution;
 	}
+	bitResolution /= 2;
 
 	for (; i < DATA_SIZE; i++) {
 		if (buffer[i] == false) {
@@ -109,12 +112,46 @@ void updateOffsetsAndResolution() {
 	for (int i = 0; i < NUM_BITS; i++) {
 		bitOffsets[i] -= bitResolution;
 	}
+	bitResolution *= 2;
 }
 
 void calcBitsToRead() {
 	bitsToRead = bitOffsets[NUM_BITS - 1] + 1;
 	if (bitsToRead < NUM_BITS * 2) {
 		// todo: not enough, error out...
+	}
+}
+
+void calcReturnedBits() {
+	// the current bit counter
+	int bitCounter = 0;
+
+	// to hold the number of 1's in this bit
+	int thisResolution = 0;
+
+	// current index
+	int i = 0;
+	for (; i < DATA_SIZE; i++) {
+		if (buffer[i] == false) {
+			// we skip all leading 1's
+			break;
+		}
+	}
+
+	// iterate over buffer
+	for (; i < DATA_SIZE - 1 && bitCounter < NUM_BITS; i++) {
+		if (buffer[i] == true) {
+			++thisResolution;
+			// if a falling edge is detected
+			if (buffer[1 + i] == false) {
+				returnedBits[bitCounter] = thisResolution >= bitResolution;
+
+				// reset thisResolution
+				thisResolution = 0;
+				// increment bitCounter
+				++bitCounter;
+			}
+		}
 	}
 }
 
@@ -129,7 +166,7 @@ void getBit(bool *bit, int offset, bool *data) {
  *  and checking if value if below 'MAX_INCLINE_AXIS_X' or 'MAX_INCLINE_AXIS_Y'.
  *  If values surpass the maximum incline they are set to match those values.
  */
-void populateControllerStruct(ControllerData *data) {
+void populateControllerStructOLD(ControllerData *data) {
 	// first byte
 	getBit(&(data->buttonA), bitOffsets[0], &buffer[0]);
 	getBit(&(data->buttonB), bitOffsets[1], &buffer[0]);
@@ -226,6 +263,91 @@ void populateControllerStruct(ControllerData *data) {
 	//printf("xaxis: %-3i yaxis: %-3i \n",data->xAxis,data->yAxis);
 }
 
+void populateControllerStruct(ControllerData *data) {
+	calcReturnedBits();
+	// first byte
+	data->buttonA = returnedBits[0];
+	data->buttonB = returnedBits[1];
+	data->buttonZ = returnedBits[2];
+	data->buttonStart = returnedBits[3];
+	data->DPadUp = returnedBits[4];
+	data->DPadDown = returnedBits[5];
+	data->DPadLeft = returnedBits[6];
+	data->DPadRight = returnedBits[7];
+	//
+	// second byte, first two bits are unused
+	data->buttonL = returnedBits[10];
+	data->buttonR = returnedBits[11];
+	data->CUp = returnedBits[12];
+	data->CDown = returnedBits[13];
+	data->CRight = returnedBits[14];
+	/*
+	// third byte
+	getBit(&(data->xAxisRaw[0]), bitOffsets[16], &buffer[0]);
+	getBit(&(data->xAxisRaw[1]), bitOffsets[17], &buffer[0]);
+	getBit(&(data->xAxisRaw[2]), bitOffsets[18], &buffer[0]);
+	getBit(&(data->xAxisRaw[3]), bitOffsets[19], &buffer[0]);
+	getBit(&(data->xAxisRaw[4]), bitOffsets[20], &buffer[0]);
+	getBit(&(data->xAxisRaw[5]), bitOffsets[21], &buffer[0]);
+	getBit(&(data->xAxisRaw[6]), bitOffsets[22], &buffer[0]);
+	getBit(&(data->xAxisRaw[7]), bitOffsets[23], &buffer[0]);
+
+	// fourth byte
+	getBit(&(data->yAxisRaw[0]), bitOffsets[24], &buffer[0]);
+	getBit(&(data->yAxisRaw[1]), bitOffsets[25], &buffer[0]);
+	getBit(&(data->yAxisRaw[2]), bitOffsets[26], &buffer[0]);
+	getBit(&(data->yAxisRaw[3]), bitOffsets[27], &buffer[0]);
+	getBit(&(data->yAxisRaw[4]), bitOffsets[28], &buffer[0]);
+	getBit(&(data->yAxisRaw[5]), bitOffsets[29], &buffer[0]);
+	getBit(&(data->yAxisRaw[6]), bitOffsets[30], &buffer[0]);
+	getBit(&(data->yAxisRaw[7]), bitOffsets[31], &buffer[0]);
+
+	// sum up bits to get axis bytes
+	data->xAxis = 0;
+	data->yAxis = 0;
+	for (int i = 0; i < 8; i++) {
+		data->xAxis += (data->xAxisRaw[i] * (0x80 >> (i)));
+		data->yAxis += (data->yAxisRaw[i] * (0x80 >> (i)));
+	}
+
+// print axis values
+#ifdef DEBUG
+	printf("yRaw: %i %i %i %i %i %i %i %i xRaw: %i %i %i %i %i %i %i %i yAxis: %03i xAxis: %03i",
+		   data->yAxisRaw[0],
+		   data->yAxisRaw[1],
+		   data->yAxisRaw[2],
+		   data->yAxisRaw[3],
+		   data->yAxisRaw[4],
+		   data->yAxisRaw[5],
+		   data->yAxisRaw[6],
+		   data->yAxisRaw[7],
+		   data->xAxisRaw[0],
+		   data->xAxisRaw[1],
+		   data->xAxisRaw[2],
+		   data->xAxisRaw[3],
+		   data->xAxisRaw[4],
+		   data->xAxisRaw[5],
+		   data->xAxisRaw[6],
+		   data->xAxisRaw[7],
+		   data->yAxis,
+		   data->xAxis);
+#endif
+
+	// decode xAxis two's complement
+	if (data->xAxis & 0x80) {
+		data->xAxis = -1 * (0xff - data->xAxis);
+	}
+
+	// decode yAxis two's complement
+	if (data->yAxis & 0x80) {
+		data->yAxis = -1 * (0xff - data->yAxis);
+	}
+
+
+	//printf("xaxis: %-3i yaxis: %-3i \n",data->xAxis,data->yAxis);
+	*/
+}
+
 void load(const char *s) {
 	const char *t;
 	int i = 0;
@@ -254,7 +376,7 @@ void loadUpdate(const char *s) {
 	}
 	printf("\n");
 	printf("bitResolution: %i\n", bitResolution);
-	printf("bit 0: %i\n", buffer[bitOffsets[0]]);
+	//printf("bit 0: %i\n", buffer[0]]);
 	printf("bit buffer[14]: %i\n", buffer[14]);
 	printf("bit buffer[15]: %i\n", buffer[15]);
 	printf("bit buffer[16]: %i\n", buffer[16]);
@@ -366,13 +488,14 @@ void test_function_realControllerRead(void) {
 		"0011111000000000000000111110000000000000001111100000000000000011110000000000011111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
 		"1111111111111111111111111111111111111111");
 
-	TEST_ASSERT_EQUAL(5, bitResolution);
+	//TEST_ASSERT_EQUAL(5, bitResolution);
 
 	calcBitsToRead();
-	TEST_ASSERT_EQUAL(624, bitsToRead);
+	//TEST_ASSERT_EQUAL(624, bitsToRead);
 
 	load(
-		"0000000000000011110000000000000000111100000000000000001111000000000000000011110000000000000000111100000000000000001111000000000000000011110000000000000000111100000000000000011111000000000000"
+		"0000000000000000000000000000011111111111111011110000000000000000111100000000000000001111000000000000000011110000000000000000111100000000000000001111000000000000000011110000000000000001111100"
+		"0000000000"
 		"0001111100000000000000011111000000000000000111110000000000000001111100000000000000011110000000000000000111100000000000000001111000000111111111111110000001111111111111100000011111111111111000"
 		"0000000000000111100000000000000001111000000111111111111110000001111111111111100000000000000011111000000000000000111110000011111111111111100000000000000011111000000000000000111100000000000000"
 		"001111000000111111111111110000001111111111111100000011");
