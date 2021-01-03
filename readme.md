@@ -7,6 +7,8 @@ Currently supported inputs: SNES/NES, Sega Genesis/Megadrive/Atari, Playstation 
 
 Currently supported outputs: bluetooth-hid gamepad, usb-hid gamepad, nintendo switch usb gamepad, wireless usb-hid gamepad over radio
 
+OpenRetroPad is written and tested on an Arduino Pro Micro and an ESP32, there is also an in-progress custom PCB being developed at [OpenRetroPadHW](https://github.com/OpenRetroPad/OpenRetroPadHW)
+
 Build using [PlatformIO](https://platformio.org/) using `pio run` or `pio run -e $board-$input-$output` for a specific target/env.
 
 env's are laid out like `$board-$input-$output`
