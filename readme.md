@@ -18,6 +18,14 @@ supported values:
   * $output: radio, usb, usbradio, switchusb, bt, debug
   * please note not all boards are compatible with all inputs/outputs, for example esp32 can only do bt, micro can only do radio or usb
 
+Pics
+----
+
+My controllers and adapters I used to build+test this (and play with, of course!)
+
+![NES, SNES, Genesis 3, Genesis 6 controllers](images/controllers1.jpg)
+![N64, PS2, GameCube, Dreamcast controllers](images/controllers2.jpg)
+
 Wiring
 ------
 
