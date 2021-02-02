@@ -1,48 +1,3 @@
-/*  DaemonBite Saturn USB Adapter
- *  Author: Mikael Norrgård <mick@daemonbite.com>
- *
- *  Copyright (c) 2020 Mikael Norrgård <http://daemonbite.com>
- *
- *  GNU GENERAL PUBLIC LICENSE
- *  Version 3, 29 June 2007
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
- *
- */
-
-#include "Arduino.h"
-
-#ifndef GAMEPAD_COUNT
-#define GAMEPAD_COUNT 2
-#endif
-
-#include "gamepad/Gamepad.h"
-
-#include "pins.h"
-
-// How many microseconds to wait after setting select lines? (2µs is enough according to the Saturn developer's manual)
-// 20µs is a "safe" value that seems to work for original Saturn controllers and Retrobit wired controllers
-#define SELECT_PAUSE 20
-
-// Uncomment to support the Retro Bit 2.4GHz wireless controller (this will increase lag a lot)
-//#define RETROBIT_WL
-
-#define UP 0x01
-#define DOWN 0x02
-#define LEFT 0x04
-#define RIGHT 0x08
-
 /* -------------------------------------------------------------------------
 Saturn controller socket (looking face-on at the front of the socket):
 ___________________
@@ -54,175 +9,281 @@ ___________________
 / 9 8 7 6 5 4 3 2 1 \
 |___________________|
 
-Saturn (P1)    Arduino Pro Micro
---------------------------------------
-1 VCC         VCC                      - black
-2 DATA1       2   PD1                  - white
-3 DATA0       3   PD0                  - gray
-4 SEL1        15  PB1 (Shared with P2) - blue
-5 SEL0        14  PB3 (Shared with P2) - green
-6 TL (5V)     4   PD4                  - yellow
-7 DATA3       TXO PD3                  - orange
-8 DATA2       RXI PD2                  - red
-9 GND         GND                      - brown
-
-Saturn (P2)    Arduino Pro Micro
---------------------------------------
-1 VCC         VCC
-2 DATA1       A2  PF5
-3 DATA0       A3  PF4
-4 SEL1        15  PB1 (Shared with P1)
-5 SEL0        14  PB3 (Shared with P1)
-6 TL (5V)     6   PD7
-7 DATA3       A0  PF7
-8 DATA2       A1  PF6
-9 GND         GND
+Saturn
+-----------------
+1 VCC     - black
+2 DATA1   - white
+3 DATA0   - gray
+4 SEL1    - blue
+5 SEL0    - green
+6 TL (5V) - yellow
+7 DATA3   - orange
+8 DATA2   - red
+9 GND     - brown
 
 NOTE: The receiver of the Retro Bit 2.4GHz controller needs to be plugged
       in after the adapter has been connected to USB and the RETROBIT_WL
       define needs to be uncommented.
 ------------------------------------------------------------------------- */
+#include "Arduino.h"
+
+#include <digitalWriteFast.h>
+//#define digitalWriteFast digitalWrite
+//#define digitalReadFast digitalRead
+
+#ifndef GAMEPAD_COUNT
+#define GAMEPAD_COUNT 2
+#endif
+
+#include "gamepad/Gamepad.h"
+
+// How many microseconds to wait after setting select lines? (2µs is enough according to the Saturn developer's manual)
+// 20µs is a "safe" value that seems to work for original Saturn controllers and Retrobit wired controllers
+#define SELECT_PAUSE 10
+
+// Uncomment to support the Retro Bit 2.4GHz wireless controller (this will increase lag a lot)
+//#define RETROBIT_WL
+
+#include "pins.h"
+
+// pins
+#define P1_2 OR_PIN_2
+#define P1_3 OR_PIN_3
+#define P1_6 OR_PIN_4
+#define P1_7 OR_PIN_1
+#define P1_8 OR_PIN_11
+
+#define PX_4 OR_PIN_6
+#define PX_5 OR_PIN_5
+
+#if GAMEPAD_COUNT == 2
+
+#define P2_2 OR_PIN_20
+#define P2_3 OR_PIN_21
+#define P2_6 OR_PIN_10
+#define P2_7 OR_PIN_18
+#define P2_8 OR_PIN_19
+
+#endif
 
 // Set up USB HID gamepads
 GAMEPAD_CLASS gamepad;
 
-// Controllers
-uint8_t buttons[2][2] = {{0, 0}, {0, 0}};
-uint8_t buttonsPrev[2][2] = {{0, 0}, {0, 0}};
-uint8_t gp = 0;
+ScratchGamepad currentGamepad;
 
 // Read R, X, Y, Z
 void read1() {
-	PORTB &= ~B00001010;  // Set select outputs to 00
+	// Set select outputs to 00
+	digitalWriteFast(PX_4, LOW);
+	digitalWriteFast(PX_5, LOW);
 	delayMicroseconds(SELECT_PAUSE);
-	buttons[0][1] |= (PIND & 0x0f) << 4;
-	if (GAMEPAD_COUNT == 2)
-		buttons[1][1] |= (PINF & 0xf0);
+	if (!digitalReadFast(P1_3)) {
+		// Z
+		currentGamepad.press(0, BUTTON_R);
+	}
+	if (!digitalReadFast(P1_2)) {
+		// Y
+		currentGamepad.press(0, BUTTON_X);
+	}
+	if (!digitalReadFast(P1_8)) {
+		// X
+		currentGamepad.press(0, BUTTON_L);
+	}
+	if (!digitalReadFast(P1_7)) {
+		// R
+		currentGamepad.press(0, BUTTON_R2);
+	}
+#if GAMEPAD_COUNT == 2
+	if (!digitalReadFast(P2_3)) {
+		// Z
+		currentGamepad.press(1, BUTTON_R);
+	}
+	if (!digitalReadFast(P2_2)) {
+		// Y
+		currentGamepad.press(1, BUTTON_X);
+	}
+	if (!digitalReadFast(P2_8)) {
+		// X
+		currentGamepad.press(1, BUTTON_L);
+	}
+	if (!digitalReadFast(P2_7)) {
+		// R
+		currentGamepad.press(1, BUTTON_R2);
+	}
+#endif
 }
 
 // Read ST, A, C, B
 void read2() {
-	PORTB ^= B00001010;	 // Toggle select outputs (01->10 or 10->01)
+	// Toggle select outputs (01->10 or 10->01)
+	digitalWriteFast(PX_4, HIGH);
+	digitalWriteFast(PX_5, LOW);
 	delayMicroseconds(SELECT_PAUSE);
-	buttons[0][1] |= (PIND & 0x0f);
-	if (GAMEPAD_COUNT == 2)
-		buttons[1][1] |= (PINF & 0xf0) >> 4;
+	if (!digitalReadFast(P1_3)) {
+		// B
+		currentGamepad.press(0, BUTTON_B);
+	}
+	if (!digitalReadFast(P1_2)) {
+		// C
+		currentGamepad.press(0, BUTTON_A);
+	}
+	if (!digitalReadFast(P1_8)) {
+		// A
+		currentGamepad.press(0, BUTTON_Y);
+	}
+	if (!digitalReadFast(P1_7)) {
+		// ST
+		currentGamepad.press(0, BUTTON_START);
+	}
+#if GAMEPAD_COUNT == 2
+	if (!digitalReadFast(P2_3)) {
+		// B
+		currentGamepad.press(1, BUTTON_B);
+	}
+	if (!digitalReadFast(P2_2)) {
+		// C
+		currentGamepad.press(1, BUTTON_A);
+	}
+	if (!digitalReadFast(P2_8)) {
+		// A
+		currentGamepad.press(1, BUTTON_Y);
+	}
+	if (!digitalReadFast(P2_7)) {
+		// ST
+		currentGamepad.press(1, BUTTON_START);
+	}
+#endif
 }
 
 // Read DR, DL, DD, DU
 void read3() {
-	PORTB ^= B00000010;	 // Set select outputs to 10 from 11 (toggle)
+	// Set select outputs to 10 from 11 (toggle)
+	digitalWriteFast(PX_4, LOW);
+	digitalWriteFast(PX_5, HIGH);
 	delayMicroseconds(SELECT_PAUSE);
-	buttons[0][0] |= (PIND & 0x0f);
-	if (GAMEPAD_COUNT == 2)
-		buttons[1][0] |= (PINF & 0xf0) >> 4;
+	if (!digitalReadFast(P1_3)) {
+		// UP
+		currentGamepad.pressDpad(0, DPAD_BIT_UP);
+	}
+	if (!digitalReadFast(P1_2)) {
+		// DOWN
+		currentGamepad.pressDpad(0, DPAD_BIT_DOWN);
+	}
+	if (!digitalReadFast(P1_8)) {
+		// LEFT
+		currentGamepad.pressDpad(0, DPAD_BIT_LEFT);
+	}
+	if (!digitalReadFast(P1_7)) {
+		// RIGHT
+		currentGamepad.pressDpad(0, DPAD_BIT_RIGHT);
+	}
+#if GAMEPAD_COUNT == 2
+	if (!digitalReadFast(P2_3)) {
+		// UP
+		currentGamepad.pressDpad(1, DPAD_BIT_UP);
+	}
+	if (!digitalReadFast(P2_2)) {
+		// DOWN
+		currentGamepad.pressDpad(1, DPAD_BIT_DOWN);
+	}
+	if (!digitalReadFast(P2_8)) {
+		// LEFT
+		currentGamepad.pressDpad(1, DPAD_BIT_LEFT);
+	}
+	if (!digitalReadFast(P2_7)) {
+		// RIGHT
+		currentGamepad.pressDpad(1, DPAD_BIT_RIGHT);
+	}
+#endif
 }
 
 // Read L, *, *, *
 void read4() {
-	PORTB |= B00001010;	 // Set select outputs to 11
+	// Set select outputs to 11
+	digitalWriteFast(PX_4, HIGH);
+	digitalWriteFast(PX_5, HIGH);
 	delayMicroseconds(SELECT_PAUSE);
-	buttons[0][0] |= (PIND & 0x0f) << 4;
-	if (GAMEPAD_COUNT == 2)
-		buttons[1][0] |= (PINF & 0xf0);
+	if (!digitalReadFast(P1_7)) {
+		// L
+		currentGamepad.press(0, BUTTON_L2);
+	}
+#if GAMEPAD_COUNT == 2
+	if (!digitalReadFast(P2_7)) {
+		// L
+		currentGamepad.press(1, BUTTON_L2);
+	}
+#endif
 }
 
 void setup() {
-	// Set D0-D3 as inputs and enable pull-up resistors (port1 data pins)
-	DDRD &= ~B00001111;
-	PORTD |= B00001111;
+	gamepad.begin();
 
-	// Set F4-F7 as inputs and enable pull-up resistors (port2 data pins)
-	DDRF &= ~B11110000;
-	PORTF |= B11110000;
+	// Set P1 data pins  as inputs and enable pull-up resistors
+	pinMode(P1_3, INPUT_PULLUP);
+	pinMode(P1_2, INPUT_PULLUP);
+	pinMode(P1_7, INPUT_PULLUP);
+	pinMode(P1_8, INPUT_PULLUP);
+	digitalWrite(P1_3, HIGH);
+	digitalWrite(P1_2, HIGH);
+	digitalWrite(P1_7, HIGH);
+	digitalWrite(P1_8, HIGH);
 
-	// Set D4 and D7 as inputs and enable pull-up resistors (port1/2 TL)
-	DDRD &= ~B10010000;
-	PORTD |= B10010000;
+	// Set P1 TL as input and enable pull-up resistor
+	pinMode(P1_6, INPUT_PULLUP);
+	digitalWrite(P1_6, HIGH);
 
-	// Set B1 and B3 as outputs and set them HIGH (select pins)
-	PORTB |= B00001010;
-	DDRB |= B00001010;
+#if GAMEPAD_COUNT == 2
+	// Set P2 data pins as inputs and enable pull-up resistors
+	pinMode(P2_3, INPUT_PULLUP);
+	pinMode(P2_2, INPUT_PULLUP);
+	pinMode(P2_7, INPUT_PULLUP);
+	pinMode(P2_8, INPUT_PULLUP);
+	digitalWrite(P2_3, HIGH);
+	digitalWrite(P2_2, HIGH);
+	digitalWrite(P2_7, HIGH);
+	digitalWrite(P2_8, HIGH);
+
+	// Set P2 TL as input and enable pull-up resistor
+	pinMode(P2_6, INPUT_PULLUP);
+	digitalWrite(P2_6, HIGH);
+#endif
+
+	// Set P1+P2 select pins as outputs and set them HIGH
+	pinMode(PX_4, OUTPUT);
+	pinMode(PX_5, OUTPUT);
+	digitalWrite(PX_4, HIGH);
+	digitalWrite(PX_5, HIGH);
 
 	// Wait for the controller(s) to settle
 	delay(100);
 }
 
-void controllerChanged(const int c) {
-	// if start and down are held at the same time, send menu and only menu
-	gamepad.buttons(c, buttons[gp][1] | ((buttons[gp][0] & 0x80) << 1));
-	/* todo:
-	if (controllers.down(c, SC_BTN_START) && ((buttons[gp][0] & DOWN) >> 1)) {
-		gamepad.buttons(c, 0);
-		gamepad.press(c, BUTTON_MENU);
-		gamepad.setHatSync(c, DPAD_CENTERED);
-		return;
-	}
-	*/
-	if (((buttons[gp][0] & DOWN) >> 1)) {
-		if (((buttons[gp][0] & RIGHT) >> 3)) {
-			gamepad.setHatSync(c, DPAD_DOWN_RIGHT);
-		} else if (((buttons[gp][0] & LEFT) >> 2)) {
-			gamepad.setHatSync(c, DPAD_DOWN_LEFT);
-		} else {
-			gamepad.setHatSync(c, DPAD_DOWN);
-		}
-	} else if ((buttons[gp][0] & UP)) {
-		if (((buttons[gp][0] & RIGHT) >> 3)) {
-			gamepad.setHatSync(c, DPAD_UP_RIGHT);
-		} else if (((buttons[gp][0] & LEFT) >> 2)) {
-			gamepad.setHatSync(c, DPAD_UP_LEFT);
-		} else {
-			gamepad.setHatSync(c, DPAD_UP);
-		}
-	} else if (((buttons[gp][0] & RIGHT) >> 3)) {
-		gamepad.setHatSync(c, DPAD_RIGHT);
-	} else if (((buttons[gp][0] & LEFT) >> 2)) {
-		gamepad.setHatSync(c, DPAD_LEFT);
-	} else {
-		gamepad.setHatSync(c, DPAD_CENTERED);
-	}
-}
-
 void loop() {
-	while (1) {
-		// Clear button data
-		buttons[0][0] = 0;
-		buttons[0][1] = 0;
-		buttons[1][0] = 0;
-		buttons[1][1] = 0;
+	// Read all button and axes states
+	read3();
+	read2();
+	read1();
+	read4();
 
-		// Read all button and axes states
-		read3();
-		read2();
-		read1();
-		read4();
-
-		// Invert the readings so a 1 means a pressed button
-		buttons[0][0] = ~buttons[0][0];
-		buttons[0][1] = ~buttons[0][1];
-		buttons[1][0] = ~buttons[1][0];
-		buttons[1][1] = ~buttons[1][1];
-
-		// Send data to USB if values have changed
-		for (gp = 0; gp < GAMEPAD_COUNT; gp++) {
-			// Has any buttons changed state?
-			if (buttons[gp][0] != buttonsPrev[gp][0] || buttons[gp][1] != buttonsPrev[gp][1]) {
-				/*
-                Gamepad[gp]._GamepadReport.buttons = buttons[gp][1] | ((buttons[gp][0] & 0x80)<<1);
-                Gamepad[gp]._GamepadReport.Y = ((buttons[gp][0] & DOWN) >> 1) - (buttons[gp][0] & UP);
-                Gamepad[gp]._GamepadReport.X = ((buttons[gp][0] & RIGHT) >> 3) - ((buttons[gp][0] & LEFT) >> 2);
-                Gamepad[gp].send();
-                */
-				controllerChanged(gp);
-				buttonsPrev[gp][0] = buttons[gp][0];
-				buttonsPrev[gp][1] = buttons[gp][1];
+	// Send data to USB if values have changed
+	for (uint8_t gp = 0; gp < GAMEPAD_COUNT; gp++) {
+		if (currentGamepad.changed(gp, gamepad)) {
+			const auto hat = gamepad.getHat(gp);
+			if (hat == DPAD_DOWN && gamepad.isPressed(gp, BUTTON_START)) {
+				gamepad.buttons(gp, 0);
+				gamepad.press(gp, BUTTON_MENU);
+				gamepad.setHatSync(gp, DPAD_CENTERED);
+				currentGamepad.changed(gp, gamepad);
+				return;
 			}
+			gamepad.setHatSync(gp, hat);
 		}
+		// Clear button data
+		currentGamepad.reset(gp);
+	}
 
 #ifdef RETROBIT_WL
-		// This delay is needed for the retro bit 2.4GHz wireless controller, making it more or less useless with this adapter
-		delay(17);
+	// This delay is needed for the retro bit 2.4GHz wireless controller, making it more or less useless with this adapter
+	delay(17);
 #endif
-	}
 }

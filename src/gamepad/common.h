@@ -4,10 +4,11 @@
 
 #include <Arduino.h>
 
-#define ARDUINO_ARCH_ESP32 1
 #include "HIDTypes.h"
 
 #if GAMEPAD_OUTPUT == 5	 // nintendo switch
+
+#include "HID-Project.h"
 
 #define BUTTON_A NSButton_A
 #define BUTTON_B NSButton_B
@@ -143,6 +144,11 @@
 #define BUTTON_32 2147483648
 #endif
 
+#define DPAD_BIT_UP 1
+#define DPAD_BIT_DOWN 2
+#define DPAD_BIT_LEFT 4
+#define DPAD_BIT_RIGHT 8
+
 #ifndef GAMEPAD_REPORT_ARRAY_ADD
 // this is used by radio gamepad to send additional info
 #define GAMEPAD_REPORT_ARRAY_ADD 0
@@ -246,6 +252,7 @@ static const uint8_t _hidReportDescriptor[] PROGMEM = {
 class AbstractGamepad {
    public:
 	uint32_t _buttons[GAMEPAD_COUNT];
+	uint8_t _dpad[GAMEPAD_COUNT];
 	uint8_t gamepadReport[GAMEPAD_REPORT_LEN + GAMEPAD_REPORT_ARRAY_ADD];
 
 	AbstractGamepad() {
@@ -320,13 +327,76 @@ class AbstractGamepad {
 		return ((b & _buttons[cIdx]) > 0);
 	}
 
+	virtual void dpad(const uint8_t cIdx, uint8_t b) {
+		_dpad[cIdx] = b;
+	}
+
+	virtual void pressDpad(const uint8_t cIdx, uint8_t b) {
+		dpad(cIdx, _dpad[cIdx] | b);
+	}
+
+	virtual void releaseDpad(const uint8_t cIdx, uint8_t b) {
+		dpad(cIdx, _dpad[cIdx] & ~b);
+	}
+
+	virtual bool isDpadPressed(const uint8_t cIdx, uint8_t b) {
+		return ((b & _dpad[cIdx]) > 0);
+	}
+
 	virtual void sync(const uint8_t cIdx) {
 		sendHidReport(cIdx, &gamepadReport, GAMEPAD_REPORT_LEN);
 	}
 
-	virtual void sendHidReport(const uint8_t cIdx, const void* d, int len);	 // actually sends report
+	virtual void reset(const uint8_t cIdx) {
+		_buttons[cIdx] = 0;
+		_dpad[cIdx] = 0;
+	}
+
+	virtual char getHat(const uint8_t cIdx) {
+		// bit positions are B0000RLDU
+		switch (_dpad[cIdx]) {
+			case B00000000:
+				return DPAD_CENTER;
+			case B00000001:
+				return DPAD_UP;
+			case B00000010:
+				return DPAD_DOWN;
+			case B00000100:
+				return DPAD_LEFT;
+			case B00001000:
+				return DPAD_RIGHT;
+			case B00001001:
+				return DPAD_UP_RIGHT;
+			case B00001010:
+				return DPAD_DOWN_RIGHT;
+			case B00000110:
+				return DPAD_DOWN_LEFT;
+			case B00000101:
+				return DPAD_UP_LEFT;
+		}
+		return DPAD_CENTER;
+	}
+
+	// actually sends report
+	virtual void sendHidReport(const uint8_t cIdx, const void* d, int len) {
+	}
 
 	virtual ~AbstractGamepad() {
+	}
+};
+
+class ScratchGamepad : public AbstractGamepad {
+   public:
+	ScratchGamepad() : AbstractGamepad() {
+	}
+
+	virtual boolean changed(const uint8_t cIdx, AbstractGamepad& current) {
+		if (_buttons[cIdx] != current._buttons[cIdx] || _dpad[cIdx] != current._dpad[cIdx]) {
+			current._dpad[cIdx] = _dpad[cIdx];
+			current._buttons[cIdx] = _buttons[cIdx];
+			return true;
+		}
+		return false;
 	}
 };
 
