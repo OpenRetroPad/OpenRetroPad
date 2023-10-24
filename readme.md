@@ -38,9 +38,9 @@ Wiring
 |  1  TX        |  1                     | 19         | -        | LATCH   | -      | -        | -        | P1-1        | P1-DATA1  | P1-7        | -        |
 |  2  SDA       |  2                     | 21         | -        | CLOCK   | DATA   | P1-DATA  | P1-DATA  | P1-3        | P1-DATA5  | P1-2        | SDA      |
 |  3  SCL       |  3                     | 22         | -        | P1-DATA | CMD    | -        | -        | P1-4        | -         | P1-3        | SCL      |
-|  4  Analog    |  4                     | 15         | -        | -       | -      | -        | -        | P1-6        | -         | P1-6        | -        |
+|  4  Analog    |  4                     | 15         | -        | -       | -      | -        | -        | -           | -         | -           | -        |
 |  5  Digital   |  5                     | 16         | -        | P3-DATA | CLK    | -        | -        | P1-7        | -         | PX-5        | -        |
-|  6  Analog    |  6                     |  2         | -        | -       | -      | -        | -        | P1-9        | -         | PX-4        | -        |
+|  6  Analog    |  6                     |  2         | -        | -       | -      | -        | -        | -           | -         | -           | -        |
 |  7  Digital   |  7                     | 17         | CE       | -       | -      | -        | -        | P2-7*       | -         | -           | -        |
 |  8  Analog    |  8                     |  4         | CSN      | -       | -      | -        | -        | -           | -         | -           | -        |
 |  9  Analog    |  9 > 1k Ω              | 35 > 1k Ω  | -        | 330 Ω   | 100 Ω  | 220 Ω    | 680 Ω    | 470 Ω       | 820 Ω     | 1000 Ω      | 1500 Ω   |
@@ -48,8 +48,8 @@ Wiring
 | 11  RX        |  0                     | 18         | -        | P4-DATA | -      | -        | -        | P1-2        | -         | P1-8        | -        |
 | 12  -         | -                      | -          | -        | -       | -      | -        | -        | -           | -         | -           | -        |
 | 13  -         | -                      | -          | -        | -       | -      | -        | -        | -           | -         | -           | -        |
-| 14  MISO      | 14                     | 12         | MISO     | -       | -      | -        | -        | P2-6*       | -         | -           | -        |
-| 15  SCLK      | 15                     | 14         | SCLK     | -       | -      | -        | -        | P2-9*       | -         | -           | -        |
+| 14  MISO      | 14                     | 12         | MISO     | -       | -      | -        | -        | -           | -         | -           | -        |
+| 15  SCLK      | 15                     | 14         | SCLK     | -       | -      | -        | -        | -           | -         | -           | -        |
 | 16  MOSI      | 16                     | 13         | MOSI     | -       | -      | -        | -        | -           | -         | -           | -        |
 | 17  -         | -                      | -          | -        | -       | -      | -        | -        | -           | -         | -           | -        |
 | 18  Analog    | 18                     | 27         | -        | -       | -      | -        | -        | P2-1        | -         | P2-7        | -        |
@@ -60,7 +60,13 @@ Wiring
 | 23  3.3V VCC  | -                      | 3.3V VCC   | 3.3V VCC | -       | -      | 3.3V VCC | 3.3V VCC | -           | -         | -           | 3.3V VCC |
 | 24  5V VCC    | 5V VCC OUT             | 5V VCC     | 5V VCC   | 5V VCC  | 5V VCC | -        | 5V VCC   | PX-5 5V VCC | 5V VCC    | PX-1 5V VCC | -        |
 | 25  GND       | GND                    | GND        | GND      | GND     | -      | GND      | GND      | PX-8 GND    | GND       | PX-9 GND    | GND      |
-
+| 25  GND       | GND                    | GND        | GND      | GND     | -      | GND      | GND      | PX-8 GND    | GND       | PX-9 GND    | GND      |
+| 26  -         | -                      | 23         | -        | -       | -      | -        | -        | -           | -         | P1-6        | -        |
+| 27  -         | -                      | 5          | -        | -       | -      | -        | -        | -           | -         | PX-4        | -        |
+| 28  -         | -                      | 34         | -        | -       | -      | -        | -        | P1-6        | -         | -           | -        |
+| 29  -         | -                      | 35         | -        | -       | -      | -        | -        | P1-9        | -         | -           | -        |
+| 30  -         | -                      | 36         | -        | -       | -      | -        | -        | P2-6        | -         | -           | -        |
+| 31  -         | -                      | 39         | -        | -       | -      | -        | -        | P2-9        | -         | -           | -        |
 * 2nd player Genesis is incompatible with Radio because it uses the same pins, 1 player Genesis is compatible
 
 Ω This is optional and only used for dongle detection. On the microcontroller side, put a 1k resistor between DB-25 pin 9 and VCC (3.3v for ESP32, 5V for Micro). On each controller dongle, put a resistor of the given value between DB-25 pin 9 and GND.

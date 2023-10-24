@@ -24,7 +24,12 @@
 #define OR_PIN_19 26
 #define OR_PIN_20 25
 #define OR_PIN_21 33
-// 23
+#define OR_PIN_26 23
+#define OR_PIN_27 5   // pwm at boot
+#define OR_PIN_28 34 // input only
+#define OR_PIN_29 35 // input only
+#define OR_PIN_30 36 // input only
+#define OR_PIN_31 39 // input only
 #else
 // micro
 #define OR_PIN_1 1

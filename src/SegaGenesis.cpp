@@ -72,9 +72,9 @@ static const int DATA_PIN[GAMEPAD_COUNT][PIN_COUNT] = {
 
 //individual data pin for each controller
 static const int DATA_PIN[GAMEPAD_COUNT][PIN_COUNT] = {
-	{OR_PIN_1, OR_PIN_11, OR_PIN_2, OR_PIN_3, OR_PIN_4, OR_PIN_6},
+	{OR_PIN_1, OR_PIN_11, OR_PIN_2, OR_PIN_3, OR_PIN_10, OR_PIN_26},
 #if GAMEPAD_COUNT > 1
-	{OR_PIN_18, OR_PIN_19, OR_PIN_20, OR_PIN_21, OR_PIN_14, OR_PIN_15},
+	{OR_PIN_18, OR_PIN_19, OR_PIN_20, OR_PIN_21, OR_PIN_28, OR_PIN_29},
 #endif
 };
 
