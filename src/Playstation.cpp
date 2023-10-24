@@ -25,7 +25,7 @@ PIN # USAGE (colors from my extension cable, check your own)
 
 #define DATA1 OR_PIN_2
 #define CMD1 OR_PIN_3
-#define ATT1 OR_PIN_4
+#define ATT1 OR_PIN_10
 #define CLK1 OR_PIN_5
 
 #if defined(ARDUINO_ARCH_ESP32)
