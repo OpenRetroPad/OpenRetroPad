@@ -12,17 +12,29 @@
 static const int LATCH_PIN = OR_PIN_1;	// brown
 static const int CLOCK_PIN = OR_PIN_2;	// white
 
+#define DATA_P1 OR_PIN_3
+#define DATA_P2 OR_PIN_4
+#define DATA_P3 OR_PIN_5
+#define DATA_P4 OR_PIN_6
+
+#ifdef BLUERETRO_MAPPING
+#undef DATA_P2
+#undef DATA_P4
+#define DATA_P2 OR_PIN_10
+#define DATA_P4 OR_PIN_11
+#endif
+
 //individual data pin for each controller
 static const int DATA_PIN[GAMEPAD_COUNT] = {
-	OR_PIN_3,
+	DATA_P1,
 #if GAMEPAD_COUNT > 1
-	OR_PIN_10,
+	DATA_P2,
 #endif
 #if GAMEPAD_COUNT > 2
-	OR_PIN_5,
+	DATA_P3,
 #endif
 #if GAMEPAD_COUNT > 3
-	OR_PIN_11,
+	DATA_P4,
 #endif
 };
 // power red, ground black

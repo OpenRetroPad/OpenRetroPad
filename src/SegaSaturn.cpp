@@ -49,11 +49,11 @@ NOTE: The receiver of the Retro Bit 2.4GHz controller needs to be plugged
 // pins
 #define P1_2 OR_PIN_2
 #define P1_3 OR_PIN_3
-#define P1_6 OR_PIN_26
+#define P1_6 OR_PIN_4
 #define P1_7 OR_PIN_1
 #define P1_8 OR_PIN_11
 
-#define PX_4 OR_PIN_27
+#define PX_4 OR_PIN_6
 #define PX_5 OR_PIN_5
 
 #if GAMEPAD_COUNT == 2
@@ -64,6 +64,13 @@ NOTE: The receiver of the Retro Bit 2.4GHz controller needs to be plugged
 #define P2_7 OR_PIN_18
 #define P2_8 OR_PIN_19
 
+#endif
+
+#ifdef BLUERETRO_MAPPING
+#undef P1_6
+#undef PX_4
+#define P1_6 OR_PIN_26
+#define PX_4 OR_PIN_27
 #endif
 
 // Set up USB HID gamepads
