@@ -16,13 +16,13 @@ static const int CLOCK_PIN = OR_PIN_2;	// white
 static const int DATA_PIN[GAMEPAD_COUNT] = {
 	OR_PIN_3,
 #if GAMEPAD_COUNT > 1
-	OR_PIN_4,
+	OR_PIN_10,
 #endif
 #if GAMEPAD_COUNT > 2
 	OR_PIN_5,
 #endif
 #if GAMEPAD_COUNT > 3
-	OR_PIN_6,
+	OR_PIN_11,
 #endif
 };
 // power red, ground black
