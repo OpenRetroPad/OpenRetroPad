@@ -1,13 +1,13 @@
 OpenRetroPad
 ------------
 
-[GrechTech fork] Minor alterations to map pins to those used by BlueRetro. Changes pins for ESP32 Gensis/MS, Saturn, SNES/NES and PSX.
+[GrechTech fork] Minor alterations to map pins to those used by BlueRetro. Changes pins for ESP32 Genesis/MS, Saturn, SNES/NES and PSX. **To compile for BlueRetro units such as RetroRosetta, use "bluetooth-hid gamepad" output (out-bt).**  
 
 Adapt various input devices to various output devices.
 
 Currently supported inputs: SNES/NES, Sega Genesis/Megadrive/Atari, Sega Saturn, Playstation (and PS2) Digital and Dual shock, Nintendo 64, Nintendo Gamecube, Nintendo Wii Nunchuck/Wii Classic/SNES+NES Mini
 
-Currently supported outputs: bluetooth-hid gamepad, usb-hid gamepad, nintendo switch usb gamepad, wireless usb-hid gamepad over radio
+Currently supported outputs : bluetooth-hid gamepad, usb-hid gamepad, nintendo switch usb gamepad, wireless usb-hid gamepad over radio
 
 OpenRetroPad is written and tested on an Arduino Pro Micro and an ESP32, there is also an in-progress custom PCB being developed at [OpenRetroPadHW](https://github.com/OpenRetroPad/OpenRetroPadHW)
 
@@ -58,7 +58,7 @@ Wiring
 |  12B     | 30  RR EXT 5  | -                      | 36         | -        | -       | -      | -        | -        | P2-6        | -         | -           | -        |
 |  20B     | 31  RR EXT 6  | -                      | 39         | -        | -       | -      | -        | -        | P2-9        | -         | -           | -        |
 
-* 2nd player Genesis is incompatible with Radio because it uses the same pins, 1 player Genesis is compatible  
+\* 2nd player Genesis is incompatible with Radio because it uses the same pins, 1 player Genesis is compatible  
 ** Not connected on RR
 
 Ω This is optional and only used for dongle detection [Not yet implemented]. On the microcontroller side, put a 1k resistor between DB-25 pin 9 and VCC (3.3v for ESP32, 5V for Micro). On each controller dongle, put a resistor of the given value between DB-25 pin 9 and GND.
