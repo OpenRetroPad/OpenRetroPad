@@ -20,61 +20,50 @@ supported values:
   * $output: radio, usb, usbradio, switchusb, bt, debug
   * please note not all boards are compatible with all inputs/outputs, for example esp32 can only do bt, micro can only do radio or usb
 
-Pics
-----
-
-My controllers and adapters I used to build+test this (and play with, of course!)
-
-![NES, SNES, Genesis 3, Genesis 6 controllers](images/controllers1.jpg)
-![N64, PS2, GameCube, Dreamcast controllers](images/controllers2.jpg)
-
 Wiring
 ------
 
-(quick plea: if you are good at drawing diagrams, please help!)
+| GTRR Pins| OR DB-25 Pins | Arduino Pro Micro GPIO | ESP32 GPIO | Radio    | SNES    | PSX    | N64      | Gamecube | Genesis     | Dreamcast | Saturn      | Wii Ext  |
+|----------|---------------|------------------------|------------|----------|---------|--------|----------|----------|-------------|-----------|-------------|----------|
+|   6B     |  1  TX        |  1                     | 19         | -        | LATCH   | -      | -        | -        | P1-1        | P1-DATA1  | P1-7        | -        |
+|   5B     |  2  SDA       |  2                     | 21         | -        | CLOCK   | DATA   | P1-DATA  | P1-DATA  | P1-3        | P1-DATA5  | P1-2        | SDA      |
+|   2B     |  3  SCL       |  3                     | 22         | -        | P1-DATA | CMD    | -        | -        | P1-4        | -         | P1-3        | SCL      |
+|  N/A     |  4  Analog ** |  4                     | 15         | -        | -       | -      | -        | -        | -           | -         | -           | -        |
+|  16B     |  5  Digital   |  5                     | 16         | -        | P3-DATA | CLK    | -        | -        | P1-7        | -         | PX-5        | -        |
+|  N/A     |  6  Analog ** |  6                     |  2         | -        | -       | -      | -        | -        | -           | -         | -           | -        |
+|  11B     |  7  Digital   |  7                     | 17         | CE       | -       | -      | -        | -        | P2-7*       | -         | -           | -        |
+|  N/A     |  8  Analog    |  8                     |  4         | CSN      | -       | -      | -        | -        | -           | -         | -           | -        |
+|  18B     |  9  Analog    |  9 > 1k Ω              | 35 > 1k Ω  | -        | 330 Ω   | 100 Ω  | 220 Ω    | 680 Ω    | 470 Ω       | 820 Ω     | 1000 Ω      | 1500 Ω   |
+|  17B     | 10  Analog    | 10                     | 32         | -        | P2-DATA | ATT    | -        | -        | -           | -         | P2-6        | -        |
+|  N/A     | 11  RX        |  0                     | 18         | -        | P4-DATA | -      | -        | -        | P1-2        | -         | P1-8        | -        |
+|  -       | 12  -         | -                      | -          | -        | -       | -      | -        | -        | -           | -         | -           | -        |
+|  -       | 13  -         | -                      | -          | -        | -       | -      | -        | -        | -           | -         | -           | -        |
+|  N/A     | 14  MISO **   | 14                     | 12         | MISO     | -       | -      | -        | -        | -           | -         | -           | -        |
+|  N/A     | 15  SCLK **   | 15                     | 14         | SCLK     | -       | -      | -        | -        | -           | -         | -           | -        |
+|  N/A     | 16  MOSI **   | 16                     | 13         | MOSI     | -       | -      | -        | -        | -           | -         | -           | -        |
+|  -       | 17  -         | -                      | -          | -        | -       | -      | -        | -        | -           | -         | -           | -        |
+|  14B     | 18  Analog    | 18                     | 27         | -        | -       | -      | -        | -        | P2-1        | -         | P2-7        | -        |
+|  13B     | 19  Analog    | 19                     | 26         | -        | -       | -      | -        | -        | P2-2        | -         | P2-8        | -        |
+|  15B     | 20  Analog    | 20                     | 25         | -        | -       | -      | -        | -        | P2-3        | -         | P2-2        | -        |
+|  16B     | 21  Analog    | 21                     | 33         | -        | -       | -      | -        | -        | P2-4        | -         | P2-3        | -        |
+|  -       | 22  -         | -                      | -          | -        | -       | -      | -        | -        | -           | -         | -           | SENSE    |
+|  20A     | 23  3.3V VCC  | -                      | 3.3V VCC   | 3.3V VCC | -       | -      | 3.3V VCC | 3.3V VCC | -           | -         | -           | 3.3V VCC |
+|  19D     | 24  5V VCC    | 5V VCC OUT             | 5V VCC     | 5V VCC   | 5V VCC  | 5V VCC | -        | 5V VCC   | PX-5 5V VCC | 5V VCC    | PX-1 5V VCC | -        |
+|  18A     | 25  GND       | GND                    | GND        | GND      | GND     | -      | GND      | GND      | PX-8 GND    | GND       | PX-9 GND    | GND      |
+|  17A     | 25  GND       | GND                    | GND        | GND      | GND     | -      | GND      | GND      | PX-8 GND    | GND       | PX-9 GND    | GND      |
+|   1B     | 26  RR EXT 1  | -                      | 23         | -        | -       | -      | -        | -        | -           | -         | P1-6        | -        |
+|   8B     | 27  RR EXT 2  | -                      | 5          | -        | -       | -      | -        | -        | -           | -         | PX-4        | -        |
+|  19B     | 28  RR EXT 3  | -                      | 34         | -        | -       | -      | -        | -        | P1-6        | -         | -           | -        |
+|  18B     | 29  RR EXT 4  | -                      | 35         | -        | -       | -      | -        | -        | P1-9        | -         | -           | -        |
+|  12B     | 30  RR EXT 5  | -                      | 36         | -        | -       | -      | -        | -        | P2-6        | -         | -           | -        |
+|  20B     | 31  RR EXT 6  | -                      | 39         | -        | -       | -      | -        | -        | P2-9        | -         | -           | -        |
 
-![DB-25 Pinout](images/db25pins.jpg)
-
-| GTRR Pins     | DB-25 Pins (+)| Arduino Pro Micro GPIO | ESP32 GPIO | Radio    | SNES    | PSX    | N64      | Gamecube | Genesis     | Dreamcast | Saturn      | Wii Ext  |
-|---------------|---------------|------------------------|------------|----------|---------|--------|----------|----------|-------------|-----------|-------------|----------|
-|  1  TX        |  1  TX        |  1                     | 19         | -        | LATCH   | -      | -        | -        | P1-1        | P1-DATA1  | P1-7        | -        |
-|  1  TX        |  2  SDA       |  2                     | 21         | -        | CLOCK   | DATA   | P1-DATA  | P1-DATA  | P1-3        | P1-DATA5  | P1-2        | SDA      |
-|  1  TX        |  3  SCL       |  3                     | 22         | -        | P1-DATA | CMD    | -        | -        | P1-4        | -         | P1-3        | SCL      |
-|  1  TX        |  4  Analog ** |  4                     | 15         | -        | -       | -      | -        | -        | -           | -         | -           | -        |
-|  1  TX        |  5  Digital   |  5                     | 16         | -        | P3-DATA | CLK    | -        | -        | P1-7        | -         | PX-5        | -        |
-|  1  TX        |  6  Analog ** |  6                     |  2         | -        | -       | -      | -        | -        | -           | -         | -           | -        |
-|  1  TX        |  7  Digital   |  7                     | 17         | CE       | -       | -      | -        | -        | P2-7*       | -         | -           | -        |
-|  1  TX        |  8  Analog    |  8                     |  4         | CSN      | -       | -      | -        | -        | -           | -         | -           | -        |
-|  1  TX        |  9  Analog    |  9 > 1k Ω              | 35 > 1k Ω  | -        | 330 Ω   | 100 Ω  | 220 Ω    | 680 Ω    | 470 Ω       | 820 Ω     | 1000 Ω      | 1500 Ω   |
-|  1  TX        | 10  Analog    | 10                     | 32         | -        | P2-DATA | ATT    | -        | -        | -           | -         | P2-6        | -        |
-|  1  TX        | 11  RX        |  0                     | 18         | -        | P4-DATA | -      | -        | -        | P1-2        | -         | P1-8        | -        |
-|  1  TX        | 12  -         | -                      | -          | -        | -       | -      | -        | -        | -           | -         | -           | -        |
-|  1  TX        | 13  -         | -                      | -          | -        | -       | -      | -        | -        | -           | -         | -           | -        |
-|  1  TX        | 14  MISO **   | 14                     | 12         | MISO     | -       | -      | -        | -        | -           | -         | -           | -        |
-|  1  TX        | 15  SCLK **   | 15                     | 14         | SCLK     | -       | -      | -        | -        | -           | -         | -           | -        |
-|  1  TX        | 16  MOSI **   | 16                     | 13         | MOSI     | -       | -      | -        | -        | -           | -         | -           | -        |
-|  1  TX        | 17  -         | -                      | -          | -        | -       | -      | -        | -        | -           | -         | -           | -        |
-|  1  TX        | 18  Analog    | 18                     | 27         | -        | -       | -      | -        | -        | P2-1        | -         | P2-7        | -        |
-|  1  TX        | 19  Analog    | 19                     | 26         | -        | -       | -      | -        | -        | P2-2        | -         | P2-8        | -        |
-|  1  TX        | 20  Analog    | 20                     | 25         | -        | -       | -      | -        | -        | P2-3        | -         | P2-2        | -        |
-|  1  TX        | 21  Analog    | 21                     | 33         | -        | -       | -      | -        | -        | P2-4        | -         | P2-3        | -        |
-|  1  TX        | 22  -         | -                      | -          | -        | -       | -      | -        | -        | -           | -         | -           | SENSE    |
-|  1  TX        | 23  3.3V VCC  | -                      | 3.3V VCC   | 3.3V VCC | -       | -      | 3.3V VCC | 3.3V VCC | -           | -         | -           | 3.3V VCC |
-|  1  TX        | 24  5V VCC    | 5V VCC OUT             | 5V VCC     | 5V VCC   | 5V VCC  | 5V VCC | -        | 5V VCC   | PX-5 5V VCC | 5V VCC    | PX-1 5V VCC | -        |
-|  1  TX        | 25  GND       | GND                    | GND        | GND      | GND     | -      | GND      | GND      | PX-8 GND    | GND       | PX-9 GND    | GND      |
-|  1  TX        | 25  GND       | GND                    | GND        | GND      | GND     | -      | GND      | GND      | PX-8 GND    | GND       | PX-9 GND    | GND      |
-|  1  TX        | 26  RR EXT 1  | -                      | 23         | -        | -       | -      | -        | -        | -           | -         | P1-6        | -        |
-|  1  TX        | 27  RR EXT 2  | -                      | 5          | -        | -       | -      | -        | -        | -           | -         | PX-4        | -        |
-|  1  TX        | 28  RR EXT 3  | -                      | 34         | -        | -       | -      | -        | -        | P1-6        | -         | -           | -        |
-|  1  TX        | 29  RR EXT 4  | -                      | 35         | -        | -       | -      | -        | -        | P1-9        | -         | -           | -        |
-|  1  TX        | 30  RR EXT 5  | -                      | 36         | -        | -       | -      | -        | -        | P2-6        | -         | -           | -        |
-|  1  TX        | 31  RR EXT 6  | -                      | 39         | -        | -       | -      | -        | -        | P2-9        | -         | -           | -        |
 * 2nd player Genesis is incompatible with Radio because it uses the same pins, 1 player Genesis is compatible
 ** Not connected on RR
 
-Ω This is optional and only used for dongle detection. On the microcontroller side, put a 1k resistor between DB-25 pin 9 and VCC (3.3v for ESP32, 5V for Micro). On each controller dongle, put a resistor of the given value between DB-25 pin 9 and GND.
+Ω This is optional and only used for dongle detection [Not yet implemented]. On the microcontroller side, put a 1k resistor between DB-25 pin 9 and VCC (3.3v for ESP32, 5V for Micro). On each controller dongle, put a resistor of the given value between DB-25 pin 9 and GND.
 
-All connected pins can also function as Digital pins.
+All connected pins can also function as Digital pins (RR EXT 3 - 6 input only).
 
 Credits / Links
 ---------------
