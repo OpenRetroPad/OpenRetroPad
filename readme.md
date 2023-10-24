@@ -1,8 +1,6 @@
 OpenRetroPad
 ------------
 
-[GrechTech fork] Minor alterations to map pins to those used by BlueRetro. Changes pins for ESP32 Gensis/MS, Saturn, SNES/NES and PSX.
-
 Adapt various input devices to various output devices.
 
 Currently supported inputs: SNES/NES, Sega Genesis/Megadrive/Atari, Sega Saturn, Playstation (and PS2) Digital and Dual shock, Nintendo 64, Nintendo Gamecube, Nintendo Wii Nunchuck/Wii Classic/SNES+NES Mini
@@ -35,42 +33,41 @@ Wiring
 
 ![DB-25 Pinout](images/db25pins.jpg)
 
-| GTRR Pins     | DB-25 Pins (+)| Arduino Pro Micro GPIO | ESP32 GPIO | Radio    | SNES    | PSX    | N64      | Gamecube | Genesis     | Dreamcast | Saturn      | Wii Ext  |
-|---------------|---------------|------------------------|------------|----------|---------|--------|----------|----------|-------------|-----------|-------------|----------|
-|  1  TX        |  1  TX        |  1                     | 19         | -        | LATCH   | -      | -        | -        | P1-1        | P1-DATA1  | P1-7        | -        |
-|  1  TX        |  2  SDA       |  2                     | 21         | -        | CLOCK   | DATA   | P1-DATA  | P1-DATA  | P1-3        | P1-DATA5  | P1-2        | SDA      |
-|  1  TX        |  3  SCL       |  3                     | 22         | -        | P1-DATA | CMD    | -        | -        | P1-4        | -         | P1-3        | SCL      |
-|  1  TX        |  4  Analog ** |  4                     | 15         | -        | -       | -      | -        | -        | -           | -         | -           | -        |
-|  1  TX        |  5  Digital   |  5                     | 16         | -        | P3-DATA | CLK    | -        | -        | P1-7        | -         | PX-5        | -        |
-|  1  TX        |  6  Analog ** |  6                     |  2         | -        | -       | -      | -        | -        | -           | -         | -           | -        |
-|  1  TX        |  7  Digital   |  7                     | 17         | CE       | -       | -      | -        | -        | P2-7*       | -         | -           | -        |
-|  1  TX        |  8  Analog    |  8                     |  4         | CSN      | -       | -      | -        | -        | -           | -         | -           | -        |
-|  1  TX        |  9  Analog    |  9 > 1k Ω              | 35 > 1k Ω  | -        | 330 Ω   | 100 Ω  | 220 Ω    | 680 Ω    | 470 Ω       | 820 Ω     | 1000 Ω      | 1500 Ω   |
-|  1  TX        | 10  Analog    | 10                     | 32         | -        | P2-DATA | ATT    | -        | -        | -           | -         | P2-6        | -        |
-|  1  TX        | 11  RX        |  0                     | 18         | -        | P4-DATA | -      | -        | -        | P1-2        | -         | P1-8        | -        |
-|  1  TX        | 12  -         | -                      | -          | -        | -       | -      | -        | -        | -           | -         | -           | -        |
-|  1  TX        | 13  -         | -                      | -          | -        | -       | -      | -        | -        | -           | -         | -           | -        |
-|  1  TX        | 14  MISO **   | 14                     | 12         | MISO     | -       | -      | -        | -        | -           | -         | -           | -        |
-|  1  TX        | 15  SCLK **   | 15                     | 14         | SCLK     | -       | -      | -        | -        | -           | -         | -           | -        |
-|  1  TX        | 16  MOSI **   | 16                     | 13         | MOSI     | -       | -      | -        | -        | -           | -         | -           | -        |
-|  1  TX        | 17  -         | -                      | -          | -        | -       | -      | -        | -        | -           | -         | -           | -        |
-|  1  TX        | 18  Analog    | 18                     | 27         | -        | -       | -      | -        | -        | P2-1        | -         | P2-7        | -        |
-|  1  TX        | 19  Analog    | 19                     | 26         | -        | -       | -      | -        | -        | P2-2        | -         | P2-8        | -        |
-|  1  TX        | 20  Analog    | 20                     | 25         | -        | -       | -      | -        | -        | P2-3        | -         | P2-2        | -        |
-|  1  TX        | 21  Analog    | 21                     | 33         | -        | -       | -      | -        | -        | P2-4        | -         | P2-3        | -        |
-|  1  TX        | 22  -         | -                      | -          | -        | -       | -      | -        | -        | -           | -         | -           | SENSE    |
-|  1  TX        | 23  3.3V VCC  | -                      | 3.3V VCC   | 3.3V VCC | -       | -      | 3.3V VCC | 3.3V VCC | -           | -         | -           | 3.3V VCC |
-|  1  TX        | 24  5V VCC    | 5V VCC OUT             | 5V VCC     | 5V VCC   | 5V VCC  | 5V VCC | -        | 5V VCC   | PX-5 5V VCC | 5V VCC    | PX-1 5V VCC | -        |
-|  1  TX        | 25  GND       | GND                    | GND        | GND      | GND     | -      | GND      | GND      | PX-8 GND    | GND       | PX-9 GND    | GND      |
-|  1  TX        | 25  GND       | GND                    | GND        | GND      | GND     | -      | GND      | GND      | PX-8 GND    | GND       | PX-9 GND    | GND      |
-|  1  TX        | 26  RR EXT 1  | -                      | 23         | -        | -       | -      | -        | -        | -           | -         | P1-6        | -        |
-|  1  TX        | 27  RR EXT 2  | -                      | 5          | -        | -       | -      | -        | -        | -           | -         | PX-4        | -        |
-|  1  TX        | 28  RR EXT 3  | -                      | 34         | -        | -       | -      | -        | -        | P1-6        | -         | -           | -        |
-|  1  TX        | 29  RR EXT 4  | -                      | 35         | -        | -       | -      | -        | -        | P1-9        | -         | -           | -        |
-|  1  TX        | 30  RR EXT 5  | -                      | 36         | -        | -       | -      | -        | -        | P2-6        | -         | -           | -        |
-|  1  TX        | 31  RR EXT 6  | -                      | 39         | -        | -       | -      | -        | -        | P2-9        | -         | -           | -        |
+| DB-25 Pins    | Arduino Pro Micro GPIO | ESP32 GPIO | Radio    | SNES    | PSX    | N64      | Gamecube | Genesis     | Dreamcast | Saturn      | Wii Ext  |
+|---------------|------------------------|------------|----------|---------|--------|----------|----------|-------------|-----------|-------------|----------|
+|  1  TX        |  1                     | 19         | -        | LATCH   | -      | -        | -        | P1-1        | P1-DATA1  | P1-7        | -        |
+|  2  SDA       |  2                     | 21         | -        | CLOCK   | DATA   | P1-DATA  | P1-DATA  | P1-3        | P1-DATA5  | P1-2        | SDA      |
+|  3  SCL       |  3                     | 22         | -        | P1-DATA | CMD    | -        | -        | P1-4        | -         | P1-3        | SCL      |
+|  4  Analog    |  4                     | 15         | -        | -       | -      | -        | -        | -           | -         | -           | -        |
+|  5  Digital   |  5                     | 16         | -        | P3-DATA | CLK    | -        | -        | P1-7        | -         | PX-5        | -        |
+|  6  Analog    |  6                     |  2         | -        | -       | -      | -        | -        | -           | -         | -           | -        |
+|  7  Digital   |  7                     | 17         | CE       | -       | -      | -        | -        | P2-7*       | -         | -           | -        |
+|  8  Analog    |  8                     |  4         | CSN      | -       | -      | -        | -        | -           | -         | -           | -        |
+|  9  Analog    |  9 > 1k Ω              | 35 > 1k Ω  | -        | 330 Ω   | 100 Ω  | 220 Ω    | 680 Ω    | 470 Ω       | 820 Ω     | 1000 Ω      | 1500 Ω   |
+| 10  Analog    | 10                     | 32         | -        | P2-DATA | ATT    | -        | -        | -           | -         | P2-6        | -        |
+| 11  RX        |  0                     | 18         | -        | P4-DATA | -      | -        | -        | P1-2        | -         | P1-8        | -        |
+| 12  -         | -                      | -          | -        | -       | -      | -        | -        | -           | -         | -           | -        |
+| 13  -         | -                      | -          | -        | -       | -      | -        | -        | -           | -         | -           | -        |
+| 14  MISO      | 14                     | 12         | MISO     | -       | -      | -        | -        | -           | -         | -           | -        |
+| 15  SCLK      | 15                     | 14         | SCLK     | -       | -      | -        | -        | -           | -         | -           | -        |
+| 16  MOSI      | 16                     | 13         | MOSI     | -       | -      | -        | -        | -           | -         | -           | -        |
+| 17  -         | -                      | -          | -        | -       | -      | -        | -        | -           | -         | -           | -        |
+| 18  Analog    | 18                     | 27         | -        | -       | -      | -        | -        | P2-1        | -         | P2-7        | -        |
+| 19  Analog    | 19                     | 26         | -        | -       | -      | -        | -        | P2-2        | -         | P2-8        | -        |
+| 20  Analog    | 20                     | 25         | -        | -       | -      | -        | -        | P2-3        | -         | P2-2        | -        |
+| 21  Analog    | 21                     | 33         | -        | -       | -      | -        | -        | P2-4        | -         | P2-3        | -        |
+| 22  -         | -                      | -          | -        | -       | -      | -        | -        | -           | -         | -           | SENSE    |
+| 23  3.3V VCC  | -                      | 3.3V VCC   | 3.3V VCC | -       | -      | 3.3V VCC | 3.3V VCC | -           | -         | -           | 3.3V VCC |
+| 24  5V VCC    | 5V VCC OUT             | 5V VCC     | 5V VCC   | 5V VCC  | 5V VCC | -        | 5V VCC   | PX-5 5V VCC | 5V VCC    | PX-1 5V VCC | -        |
+| 25  GND       | GND                    | GND        | GND      | GND     | -      | GND      | GND      | PX-8 GND    | GND       | PX-9 GND    | GND      |
+| 25  GND       | GND                    | GND        | GND      | GND     | -      | GND      | GND      | PX-8 GND    | GND       | PX-9 GND    | GND      |
+| 26  -         | -                      | 23         | -        | -       | -      | -        | -        | -           | -         | P1-6        | -        |
+| 27  -         | -                      | 5          | -        | -       | -      | -        | -        | -           | -         | PX-4        | -        |
+| 28  -         | -                      | 34         | -        | -       | -      | -        | -        | P1-6        | -         | -           | -        |
+| 29  -         | -                      | 35         | -        | -       | -      | -        | -        | P1-9        | -         | -           | -        |
+| 30  -         | -                      | 36         | -        | -       | -      | -        | -        | P2-6        | -         | -           | -        |
+| 31  -         | -                      | 39         | -        | -       | -      | -        | -        | P2-9        | -         | -           | -        |
 * 2nd player Genesis is incompatible with Radio because it uses the same pins, 1 player Genesis is compatible
-** Not connected on RR
 
 Ω This is optional and only used for dongle detection. On the microcontroller side, put a 1k resistor between DB-25 pin 9 and VCC (3.3v for ESP32, 5V for Micro). On each controller dongle, put a resistor of the given value between DB-25 pin 9 and GND.
 
