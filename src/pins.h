@@ -31,7 +31,6 @@
 #define ALT_PIN_3 34 // input only
 #define ALT_PIN_4 36 // input only
 #endif
-
 #else
 // micro
 #define OR_PIN_1 1

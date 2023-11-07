@@ -33,6 +33,7 @@ Wii Nunchuck/Wii Classic/SNES+NES Classic:
 #define TRIGGER_MIN_IN 40
 
 #include <NintendoExtensionCtrl.h>
+
 #include "gamepad/Gamepad.h"
 #include "util.cpp"
 
