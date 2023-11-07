@@ -81,9 +81,9 @@ static const int DATA_PIN[GAMEPAD_COUNT][PIN_COUNT] = {
 #undef P2_5
 #undef P2_6
 #define P1_5 OR_PIN_10
-#define P1_6 OR_PIN_26
-#define P2_5 OR_PIN_28
-#define P2_6 OR_PIN_29
+#define P1_6 ALT_PIN_1
+#define P2_5 ALT_PIN_3
+#define P2_6 ALT_PIN_4
 #endif
 
 //individual data pin for each controller

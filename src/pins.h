@@ -24,12 +24,14 @@
 #define OR_PIN_19 26
 #define OR_PIN_20 25
 #define OR_PIN_21 33
-#define OR_PIN_26 23
-#define OR_PIN_27 5   // pwm at boot
-#define OR_PIN_28 34 // input only
-#define OR_PIN_29 35 // input only
-#define OR_PIN_30 36 // input only
-#define OR_PIN_31 39 // input only
+
+#ifdef BLUERETRO_MAPPING
+#define ALT_PIN_1 23 //XT pins for BlueRetro mapping use
+#define ALT_PIN_2 5  // pwm at boot
+#define ALT_PIN_3 34 // input only
+#define ALT_PIN_4 36 // input only
+#endif
+
 #else
 // micro
 #define OR_PIN_1 1
