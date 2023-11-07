@@ -25,6 +25,8 @@ PIN # USAGE
 
 #include "gamepad/Gamepad.h"
 
+#include "util.cpp"
+
 enum
 {
 	// this is the button mapping, change as you wish
@@ -45,10 +47,29 @@ enum
 
 #include "pins.h"
 
+#define P1_5 OR_PIN_4
+#define P1_6 OR_PIN_6
+#define P2_5 OR_PIN_14
+#define P2_6 OR_PIN_15
+#define P2_7 OR_PIN_7
+
+#ifdef BLUERETRO_MAPPING
+#undef P1_5
+#undef P1_6
+#undef P2_5
+#undef P2_6
+#undef P2_7
+#define P1_5 OR_PIN_10
+#define P1_6 ALT_PIN_1
+#define P2_5 ALT_PIN_3
+#define P2_6 ALT_PIN_4
+#define P2_7 ALT_PIN_2
+#endif
+
 static const int DATA_PIN_SELECT[GAMEPAD_COUNT] = {
 	OR_PIN_5,
 #if GAMEPAD_COUNT > 1
-	OR_PIN_7,
+	P2_7,
 #endif
 };
 
@@ -69,22 +90,6 @@ static const int DATA_PIN[GAMEPAD_COUNT][PIN_COUNT] = {
 
 #define OPT_PIN_READ1(X) (digitalRead(DATA_PIN[c][X]))
 #define OPT_PIN_READ2(X) (digitalRead(DATA_PIN[c][X]))
-
-#define P1_5 OR_PIN_4
-#define P1_6 OR_PIN_6
-#define P2_5 OR_PIN_14
-#define P2_6 OR_PIN_15
-
-#ifdef BLUERETRO_MAPPING
-#undef P1_5
-#undef P1_6
-#undef P2_5
-#undef P2_6
-#define P1_5 OR_PIN_10
-#define P1_6 ALT_PIN_1
-#define P2_5 ALT_PIN_3
-#define P2_6 ALT_PIN_4
-#endif
 
 //individual data pin for each controller
 static const int DATA_PIN[GAMEPAD_COUNT][PIN_COUNT] = {
@@ -378,6 +383,7 @@ void controllerChanged(const int c) {
 }
 
 void setup() {
+	setupBrLed();
 #ifdef DEBUG
 	Serial.begin(115200);
 #endif

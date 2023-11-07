@@ -7,6 +7,7 @@
 #define BUTTON_COUNT 12	 // SNES has 12, NES only has 8
 
 #include "pins.h"
+#include "util.cpp"
 
 //shared pins between all controllers
 static const int LATCH_PIN = OR_PIN_1;	// brown
@@ -212,6 +213,7 @@ void controllerChangedDebug(const int c) {
 #endif	// DEBUG
 
 void setup() {
+	setupBrLed();
 	bool allNes = true;
 #ifdef DEBUG
 	delay(5000);

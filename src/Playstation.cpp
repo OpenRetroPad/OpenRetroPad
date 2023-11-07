@@ -301,6 +301,7 @@ uint8_t shift(uint8_t _dataOut)	 // Does the actual shifting, both in and out si
 }
 
 void setup() {
+	setupBrLed();
 #ifdef DEBUG
 	Serial.begin(115200);
 #endif

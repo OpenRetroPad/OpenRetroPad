@@ -146,6 +146,7 @@ boolean connectController() {
 }
 
 void setup() {
+	setupBrLed();
 	gamepad.begin();
 	port.begin();  // init I2C
 

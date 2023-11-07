@@ -45,6 +45,7 @@ NOTE: The receiver of the Retro Bit 2.4GHz controller needs to be plugged
 //#define RETROBIT_WL
 
 #include "pins.h"
+#include "util.cpp"
 
 // pins
 #define P1_2 OR_PIN_2
@@ -223,6 +224,7 @@ void read4() {
 }
 
 void setup() {
+	setupBrLed();
 	gamepad.begin();
 
 	// Set P1 data pins  as inputs and enable pull-up resistors
