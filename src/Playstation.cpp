@@ -28,6 +28,11 @@ PIN # USAGE (colors from my extension cable, check your own)
 #define ATT1 OR_PIN_4
 #define CLK1 OR_PIN_5
 
+#ifdef BLUERETRO_MAPPING
+#undef ATT1
+#define ATT1 OR_PIN_10
+#endif
+
 #if defined(ARDUINO_ARCH_ESP32)
 
 #define CTRL_BYTE_DELAY 18

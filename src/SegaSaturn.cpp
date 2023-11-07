@@ -66,6 +66,13 @@ NOTE: The receiver of the Retro Bit 2.4GHz controller needs to be plugged
 
 #endif
 
+#ifdef BLUERETRO_MAPPING
+#undef P1_6
+#undef PX_4
+#define P1_6 ALT_PIN_1
+#define PX_4 ALT_PIN_2
+#endif
+
 // Set up USB HID gamepads
 GAMEPAD_CLASS gamepad;
 

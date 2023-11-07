@@ -70,11 +70,27 @@ static const int DATA_PIN[GAMEPAD_COUNT][PIN_COUNT] = {
 #define OPT_PIN_READ1(X) (digitalRead(DATA_PIN[c][X]))
 #define OPT_PIN_READ2(X) (digitalRead(DATA_PIN[c][X]))
 
+#define P1_5 OR_PIN_4
+#define P1_6 OR_PIN_6
+#define P2_5 OR_PIN_14
+#define P2_6 OR_PIN_15
+
+#ifdef BLUERETRO_MAPPING
+#undef P1_5
+#undef P1_6
+#undef P2_5
+#undef P2_6
+#define P1_5 OR_PIN_10
+#define P1_6 ALT_PIN_1
+#define P2_5 ALT_PIN_3
+#define P2_6 ALT_PIN_4
+#endif
+
 //individual data pin for each controller
 static const int DATA_PIN[GAMEPAD_COUNT][PIN_COUNT] = {
-	{OR_PIN_1, OR_PIN_11, OR_PIN_2, OR_PIN_3, OR_PIN_4, OR_PIN_6},
+	{OR_PIN_1, OR_PIN_11, OR_PIN_2, OR_PIN_3, P1_5, P1_6},
 #if GAMEPAD_COUNT > 1
-	{OR_PIN_18, OR_PIN_19, OR_PIN_20, OR_PIN_21, OR_PIN_14, OR_PIN_15},
+	{OR_PIN_18, OR_PIN_19, OR_PIN_20, OR_PIN_21, P2_5, P2_6},
 #endif
 };
 
