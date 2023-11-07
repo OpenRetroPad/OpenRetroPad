@@ -33,7 +33,6 @@ Wii Nunchuck/Wii Classic/SNES+NES Classic:
 #define TRIGGER_MIN_IN 40
 
 #include <NintendoExtensionCtrl.h>
-
 #include "gamepad/Gamepad.h"
 #include "util.cpp"
 
@@ -44,13 +43,13 @@ ExtensionPort port;	 // Port for communicating with extension controllers
 Nunchuk::Shared nchuk(port);			  // Read Nunchuk formatted data from the port
 ClassicController::Shared classic(port);  // Read Classic Controller formatted data from the port
 
-ExtensionController* controllers[] = {
+NintendoExtensionCtrl::ExtensionController* controllers[] = {
 	// Array of available controllers, for controller-specific init
 	&nchuk,
 	&classic,
 };
 
-const int NumControllers = sizeof(controllers) / sizeof(ExtensionController*);	// # of controllers, auto-generated
+const int NumControllers = sizeof(controllers) / sizeof(NintendoExtensionCtrl::ExtensionController*);	// # of controllers, auto-generated
 
 void (*controllerChanged)();
 
