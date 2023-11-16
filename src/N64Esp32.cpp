@@ -342,6 +342,7 @@ void populateControllerStruct(ControllerData *data) {
 ControllerData controller;
 
 void setup() {
+	setupBrLed();
 #ifdef DEBUG
 	Serial.begin(115200);
 	delay(5000);

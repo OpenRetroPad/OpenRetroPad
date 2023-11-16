@@ -95,3 +95,13 @@ inline uint8_t translateTrigger(long v) {
 	return translate(v, TRIGGER_MIN_IN, TRIGGER_MAX_IN, TRIGGER_MIN, TRIGGER_MAX);
 #endif
 }
+
+#ifdef BLUERETRO_MAPPING
+void setupBrLed()
+{
+	pinMode(17, OUTPUT);
+	digitalWrite(17, LOW);
+}
+#else
+void setupBrLed(){}
+#endif
